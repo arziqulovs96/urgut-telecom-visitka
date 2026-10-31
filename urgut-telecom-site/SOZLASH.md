@@ -9,7 +9,7 @@ Sayt hozir ham ishlaydi, lekin admin panel, onlayn arizalar va AI to‘liq ishla
 3. **Firestore → Rules** → shu papkadagi `firestore.rules` faylining matnini to‘liq qo‘ying → **Publish**.
 4. **Build → Authentication → Get started → Email/Password** → yoqing.
 5. **Authentication → Users → Add user**:
-   - E-pochta: `nasriddin1988@urguttelecom.uz` (saytda login qismiga faqat `nasriddin1988` yozilsa ham bo‘ladi)
+   - E-pochta: `naziriddin1988@urguttelecom.uz` (saytda login qismiga faqat `naziriddin1988` yozilsa ham bo‘ladi)
    - Parol: o‘zingiz kuchli parol qo‘ying
    - Xuddi shunday o‘zingiz uchun ham hisob qo‘shing.
    - Har bir foydalanuvchining **User UID** sini nusxalab oling.

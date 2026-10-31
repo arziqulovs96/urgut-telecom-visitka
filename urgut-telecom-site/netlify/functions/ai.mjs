@@ -1,4 +1,4 @@
-// AI yordamchi: avval sayt bazasidan (Firestore), kerak bo‘lsa internetdan (Google Search) javob beradi.
+// UrgutTelecom AI: avval sayt bazasidan (Firestore), kerak bo‘lsa internetdan (Google Search) javob beradi.
 // Netlify → Site configuration → Environment variables:
 //   GEMINI_API_KEY       — Google AI Studio kaliti (majburiy)
 //   FIREBASE_PROJECT_ID  — Firebase loyiha ID (majburiy)
@@ -75,34 +75,38 @@ function nowTashkent() {
 
 function systemPrompt(d, lang, web) {
   const langLine = lang === "ru"
-    ? "Отвечай на русском языке."
+    ? "Отвечай на русском языке. Если клиент пишет на другом языке, отвечай на его языке."
     : "Javobni o‘zbek tilida, lotin yozuvida yoz. Agar mijoz boshqa tilda yozsa, o‘sha tilda javob ber.";
-  return `Sen ${d?.ai?.name || "Urgut Telecom yordamchisi"}san — ${d?.brand?.name || "URGUT TELECOM"} kompaniyasi saytidagi AI yordamchi.
+  return `Sen ${d?.ai?.name || "UrgutTelecom AI"}san — ${d?.brand?.name || "URGUT TELECOM"} kompaniyasining aqlli yordamchisi. O‘zingni doim "${d?.ai?.name || "UrgutTelecom AI"}" deb tanishtir.
 ${langLine}
-Hozirgi vaqt: ${nowTashkent()} (Toshkent).
+Bugungi sana va vaqt: ${nowTashkent()} (Toshkent).
+
+SENING VAZIFANG: mijozga har qanday savolda to‘liq, aniq va foydali javob berish. Ayniqsa O‘zbekiston mobil aloqasi bo‘yicha eng yaxshi mutaxassis bo‘lishing kerak.
 
 QOIDALAR:
-1. Avvalo pastdagi KOMPANIYA MA’LUMOTLARI dan foydalan. Kompaniyaga oid (ish vaqti, filial, telefon, xizmat, kompaniya takliflari va narxlari) savollarga faqat shu ma’lumot asosida javob ber.
+1. Kompaniyaga oid savollarga (ish vaqti, filiallar, telefonlar, xizmatlar, kompaniya takliflari va narxlari) pastdagi KOMPANIYA MA’LUMOTLARI asosida javob ber. Bu ma’lumot eng ishonchli manba.
 2. ${web
-    ? "Kompaniya ma’lumotida yo‘q umumiy savollarga (masalan operatorlarning hozirgi tariflari, USSD kodlar, yangiliklar) Google Search orqali internetdan qidirib javob ber va bu ma’lumot internetdan olinganini, aniq narxni ofisda tekshirish kerakligini qisqa ayt."
-    : "Internet qidiruvi o‘chirilgan. Kompaniya ma’lumotida yo‘q narsani bilmasligingni ochiq ayt va telefon raqamlarini taklif qil."}
-3. Hech qachon narx, manzil yoki telefonni o‘ylab topma. Bilmasang, aloqa markazi raqamlarini ber.
-4. Javob qisqa va aniq bo‘lsin (odatda 2–6 gap yoki qisqa ro‘yxat). Markdown’dan faqat **qalin** va "- " ro‘yxatdan foydalan.
-5. Mijoz SIM karta olmoqchi, xizmatga yozilmoqchi yoki buyurtma bermoqchi bo‘lsa, kerakli ma’lumotni ayt, onlayn ariza qoldirishni taklif qil va javob oxiriga alohida qatorda faqat [ARIZA] belgisini qo‘y.
-6. Kompaniya va uning xizmatlariga aloqasi yo‘q mavzularda (siyosat, boshqa kompaniyalar reklamasi va h.k.) muloyimlik bilan rad et va kompaniya xizmatlariga qaytar.
-7. SIM karta pasport bilan rasmiylashtiriladi; raqamni masofadan rasmiylashtirib bo‘lmasligini, ofisga kelish kerakligini eslat (agar ma’lumotda boshqacha yozilmagan bo‘lsa).
+    ? `Operatorlar (Ucell, Uzmobile/Uztelecom, Beeline, Mobiuz, Humans va boshqalar) tariflari, abonent to‘lovi, internet paketlari, daqiqa va SMS hajmi, USSD kodlar, aksiyalar, rouming va boshqa barcha ma’lumotlarni HAR DOIM Google Search orqali internetdan qidirib top. Avvalo rasmiy saytlardan foydalan: ucell.uz, uztelecom.uz, beeline.uz, mobi.uz. Javobda aniq raqamlarni (narx so‘mda, GB, daqiqa, SMS) ko‘rsat va ma’lumot qaysi saytdan olinganini qisqa ayt. Narxlar o‘zgarishi mumkinligini va oxirgi narxni ofisda tasdiqlash mumkinligini bir gap bilan eslat.
+   Mijoz tariflarni solishtirishni so‘rasa, har bir operator bo‘yicha alohida qidirib, solishtirib ber va uning ehtiyojiga (ko‘p internet, ko‘p daqiqa, arzon narx) qarab eng mosini tavsiya qil.
+   Kompaniyaga aloqasi bo‘lmagan umumiy savollarga ham internetdan qidirib, qisqa va to‘g‘ri javob ber.`
+    : "Internet qidiruvi hozir o‘chiq. Kompaniya ma’lumotida yo‘q narsani aniq bilmasang, buni ochiq ayt va aloqa markazi raqamlarini ber."}
+3. Hech qachon narx, tarif, manzil yoki telefonni o‘ylab topma. Topa olmasang, shuni ochiq ayt.
+4. Javobni chiroyli tuz: qisqa kirish gap, keyin "- " bilan ro‘yxat, muhim joylarni **qalin** qil. Kerak bo‘lsa "### Sarlavha" ishlat. Jadval ishlatma. Oddiy savolga 2–4 gap, tariflar ro‘yxatiga batafsil javob.
+5. Mijoz SIM karta, tarif ulash, xizmat yoki buyurtma bilan qiziqsa, javob oxirida onlayn ariza qoldirishni taklif qil va eng oxirgi qatorga faqat [ARIZA] belgisini yoz.
+6. SIM karta pasport bilan ofisda rasmiylashtiriladi (agar kompaniya ma’lumotida boshqacha yozilmagan bo‘lsa).
+7. Kompaniya va boshqa operatorlar haqida hurmat bilan gapir, hech kimni kamsitma.
 
 KOMPANIYA MA’LUMOTLARI:
 ${compact(d, lang)}`;
 }
 
-async function callGemini({ key, model, sys, contents, web }) {
+async function callGemini({ key, model, sys, contents, web, urls = true }) {
   const body = {
     systemInstruction: { parts: [{ text: sys }] },
     contents,
-    generationConfig: { temperature: 0.4, maxOutputTokens: 900 },
+    generationConfig: { temperature: 0.3, maxOutputTokens: 2048 },
   };
-  if (web) body.tools = [{ google_search: {} }];
+  if (web) body.tools = urls ? [{ google_search: {} }, { url_context: {} }] : [{ google_search: {} }];
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
@@ -147,13 +151,15 @@ export default async (req, context) => {
   const contents = [
     ...hist
       .filter((m) => m && typeof m.text === "string" && m.text.trim())
-      .map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text.slice(0, 1500) }] })),
+      .map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text.slice(0, 4000) }] })),
     { role: "user", parts: [{ text: q }] },
   ];
   const sys = systemPrompt(d, lang, web);
 
   let res = await callGemini({ key, model, sys, contents, web });
-  // Internet qidiruvi limiti tugasa yoki model qo‘llamasa, qidiruvsiz qayta urinib ko‘riladi
+  // Model sahifa o‘qish vositasini qo‘llamasa, faqat Google Search bilan qayta urinadi
+  if (!res.ok && web && res.status === 400) res = await callGemini({ key, model, sys, contents, web, urls: false });
+  // Internet qidiruvi limiti tugasa, qidiruvsiz javob beradi
   if (!res.ok && web && (res.status === 429 || res.status === 400)) {
     res = await callGemini({ key, model, sys: systemPrompt(d, lang, false), contents, web: false });
   }
@@ -172,7 +178,7 @@ export default async (req, context) => {
   const sources = (cand?.groundingMetadata?.groundingChunks || [])
     .map((c) => c.web)
     .filter((w) => w?.uri && !seen.has(w.title || w.uri) && seen.add(w.title || w.uri))
-    .slice(0, 4)
+    .slice(0, 5)
     .map((w) => ({ t: (w.title || new URL(w.uri).hostname).slice(0, 60), u: w.uri }));
 
   return json({ text, sources, order });
