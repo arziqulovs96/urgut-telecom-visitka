@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(db)/documents/admins/$(request.auth.uid));
+    }
+
+    function txt(d, k, mn, mx) {
+      return d[k] is string && d[k].size() >= mn && d[k].size() <= mx;
+    }
+
+    function validRequest(d) {
+      return d.keys().hasOnly(['name','phone','service','op','branch','note','lang','src','status','createdAt'])
+        && txt(d, 'name', 2, 80)
+        && d['phone'] is string && d['phone'].matches('^[+]998[0-9]{9}$')
+        && txt(d, 'service', 0, 120)
+        && txt(d, 'op', 0, 60)
+        && txt(d, 'branch', 0, 120)
+        && txt(d, 'note', 0, 600)
+        && d['lang'] in ['uz','ru']
+        && d['src'] in ['site','ai','offer']
+        && d['status'] == 'new'
+        && d['createdAt'] == request.time;
+    }
+
+    match /site/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /requests/{id} {
+      allow create: if validRequest(request.resource.data);
+      allow get: if isAdmin() || resource.data['createdAt'] > request.time - duration.value(10, 'm');
+      allow list, update, delete: if isAdmin();
+    }
+  }
+}
