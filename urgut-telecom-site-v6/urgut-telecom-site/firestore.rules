@@ -1,0 +1,43 @@
+rules_version = '2';
+// Urgut Telecom sayti uchun Firestore qoidalari.
+// Firebase Console → Firestore Database → Rules → shu matnni qo‘yib "Publish" bosing.
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(db)/documents/admins/$(request.auth.uid));
+    }
+
+    // Sayt matnlari: hamma o‘qiydi, faqat admin yozadi
+    match /site/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Adminlar ro‘yxati: faqat Firebase Console’dan qo‘shiladi
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Onlayn arizalar
+    match /requests/{id} {
+      // Har kim saytdan ariza yubora oladi, lekin faqat to‘g‘ri tuzilgan arizani
+      allow create: if request.resource.data.keys().hasOnly(['name','phone','service','op','branch','note','lang','src','status','createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string && request.resource.data.phone.matches('^\\+998[0-9]{9}$')
+        && request.resource.data.service is string && request.resource.data.service.size() <= 120
+        && request.resource.data.op is string && request.resource.data.op.size() <= 60
+        && request.resource.data.branch is string && request.resource.data.branch.size() <= 120
+        && request.resource.data.note is string && request.resource.data.note.size() <= 600
+        && request.resource.data.lang in ['uz','ru']
+        && request.resource.data.src in ['site','ai','offer']
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time;
+      // Telegram xabarnoma funksiyasi yangi arizani ID orqali faqat 10 daqiqa o‘qiy oladi
+      allow get: if isAdmin() || resource.data.createdAt > request.time - duration.value(10, 'm');
+      allow list, update, delete: if isAdmin();
+    }
+  }
+}
