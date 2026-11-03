@@ -51,8 +51,47 @@ Ko‘pi bilan 3 ta. Yangi narsa topilmasa: []`;
   return { op: op.name, added };
 }
 
+// Hamma operatorlar BITTA so‘rovda (Gemini’ning bepul limitini tejaydi)
+export async function newsForOps(content, ops, { publish }) {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tashkent" }).format(new Date());
+  const list = ops.map((o) => { const d = DOMAINS[String(o.id || "").toLowerCase()] || DOMAINS[String(o.name || "").toLowerCase()] || ""; return `- ${o.name} (id: ${o.id}${d ? `, rasmiy sayt: ${d}` : ""})`; }).join("\n");
+  const prompt = `Bugun ${today}. Google Search bilan quyidagi mobil operatorlarning rasmiy saytlari va rasmiy kanallaridagi SO‘NGGI 14 KUNLIK yangiliklarini top: yangi tariflar, narx o‘zgarishlari, aksiyalar, yangi xizmatlar.
+${list}
+Har bir yangilikni URGUT TELECOM kompaniyasi saytidagi yangilik sifatida, O‘Z SO‘ZING BILAN, qisqa va aniq yoz (asl matnni ko‘chirma). Aniq raqamlarni (narx so‘mda, GB, daqiqa) saqla. O‘ylab topma — faqat haqiqatan topilgan ma’lumot.
+Faqat JSON massiv qaytar, boshqa hech narsa yozma:
+[{"op":"operator id","title_uz":"…","title_ru":"…","body_uz":"2–4 gap","body_ru":"2–4 предложения","date":"YYYY-MM-DD","url":"manba havolasi"}]
+Har bir operatordan ko‘pi bilan 2 ta. Yangi narsa topilmasa: []`;
+  const res = await generate({
+    content,
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    steps: [{ tools: [{ google_search: {} }], thinking: true }],
+    accept: (r) => !!extractText(r.j),
+  });
+  if (!res.ok) return ops.map((o) => ({ op: o.name, added: 0, error: res.error }));
+  const ids = new Set(ops.map((o) => o.id));
+  const items = parseArr(extractText(res.j)).filter((x) => x && x.title_uz && x.body_uz).slice(0, ops.length * 2 + 2);
+  const recent = await query("news", { orderBy: "createdAt", limit: 80 }).catch(() => []);
+  const seen = new Set(recent.map((n) => n.key).filter(Boolean));
+  const count = Object.fromEntries(ops.map((o) => [o.name, 0]));
+  for (const x of items) {
+    const key = keyOf(x.title_uz);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const op = ops.find((o) => o.id === x.op || String(o.name).toLowerCase() === String(x.op || "").toLowerCase()) || null;
+    await createDoc(`news/${randomId(20)}`, {
+      title: { uz: String(x.title_uz).slice(0, 160), ru: String(x.title_ru || x.title_uz).slice(0, 160) },
+      body: { uz: String(x.body_uz).slice(0, 1500), ru: String(x.body_ru || x.body_uz).slice(0, 1500) },
+      op: op && ids.has(op.id) ? op.id : "", img: "", status: publish ? "published" : "draft", ai: true, key,
+    }, { serverTime: ["createdAt"] });
+    if (op) count[op.name]++;
+    await tgSend(`📰 <b>AI yangilik ${publish ? "chop etdi" : "tayyorladi (tasdiq kutilmoqda)"}</b>\n<b>${h(x.title_uz)}</b>\n${h(String(x.body_uz).slice(0, 400))}${x.url ? `\n🔗 Manba (faqat adminlar uchun): ${h(x.url)}` : ""}`, { chats: await adminChats("news") }).catch(() => {});
+  }
+  return ops.map((o) => ({ op: o.name, added: count[o.name] }));
+}
+
 export async function runNews(content, { opIds, publish } = {}) {
   const ops = (content?.operators || []).filter((o) => !o.hidden && o.name && (!opIds || opIds.includes(o.id)));
   const pub = publish ?? !!content?.newsCfg?.autoPublish;
-  return Promise.all(ops.map((op) => newsForOperator(content, op, { publish: pub }).catch((e) => ({ op: op.name, added: 0, error: e.message }))));
+  if (!ops.length) return [];
+  return newsForOps(content, ops, { publish: pub }).catch((e) => ops.map((o) => ({ op: o.name, added: 0, error: e.message })));
 }

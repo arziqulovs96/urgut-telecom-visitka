@@ -223,7 +223,9 @@ async function runWrite(name, a, who) {
     case "delete_number": await deleteDoc(`numbers/${a.id}`); return "O‘chirildi";
     case "fetch_news_now": {
       const r = await runNews(await siteContent(0), { opIds: a.operator ? [a.operator] : undefined });
-      return r.map((x) => `${x.op}: ${x.added} ta${x.error ? ` (xato: ${x.error})` : ""}`).join(", ");
+      if (r.length && r.every((x) => x.error) && new Set(r.map((x) => x.error)).size === 1) throw new Error(r[0].error);
+      const n = r.reduce((a, x) => a + (x.added || 0), 0);
+      return `${n} ta yangi yangilik` + (n ? ": " + r.filter((x) => x.added).map((x) => `${x.op} — ${x.added}`).join(", ") : " topilmadi (operatorlarda so‘nggi 14 kunda yangilik yo‘q yoki hammasi avval qo‘shilgan)");
     }
     case "send_report_now": await tgSend(await buildReport(await siteContent(0))); return "Yuborildi";
   }

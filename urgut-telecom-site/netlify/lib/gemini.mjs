@@ -74,20 +74,28 @@ export async function generate({ content, sys, contents, steps, accept = (r) => 
   if (!key) return { ok: false, status: 503, error: "GEMINI_API_KEY sozlanmagan" };
   const tried = new Set();
   const queue = onlyModel ? [onlyModel] : [...new Set([autoModel, wantedModel(content), ...FALLBACKS].filter(Boolean))];
-  let last = null, discovered = !!onlyModel;
+  let last = null, discovered = !!onlyModel, waited = false;
   while (queue.length) {
     const model = queue.shift();
     if (tried.has(model)) continue;
     tried.add(model);
     let notFound = false;
     for (const st of steps) {
-      const res = await call({ key, model, sys: st.sys ?? sys, contents, tools: st.tools, thinking: st.thinking, jsonOut, maxTokens });
+      let res = await call({ key, model, sys: st.sys ?? sys, contents, tools: st.tools, thinking: st.thinking, jsonOut, maxTokens });
+      if (res.status === 429 && !waited && !/per ?day|daily|PerDay/i.test(JSON.stringify(res.j))) {
+        waited = true;
+        // Daqiqalik limit: biroz kutib bir marta qayta urinamiz
+        const sec = Number(String(JSON.stringify(res.j).match(/retryDelay"?:\s*"?(\d+)/)?.[1] || 4));
+        await new Promise((ok) => setTimeout(ok, Math.min(8, Math.max(2, sec)) * 1000));
+        res = await call({ key, model, sys: st.sys ?? sys, contents, tools: st.tools, thinking: st.thinking, jsonOut, maxTokens });
+      }
       last = { ...res, model, step: st };
       if (res.ok && accept(res)) {
         if (!onlyModel) autoModel = model;
         return last;
       }
       if (res.status === 404) { notFound = true; break; }
+      if (res.status === 429) break; // bu modelning limiti tugadi — keyingi zaxira modelga o‘tamiz
       if (res.status === 401 || res.status === 403) return { ...last, ok: false, error: "Gemini kaliti noto‘g‘ri yoki faol emas" };
     }
     if (!queue.length && !discovered) {
@@ -97,7 +105,8 @@ export async function generate({ content, sys, contents, steps, accept = (r) => 
     }
   }
   const st = last?.status;
-  return { ...(last || {}), ok: false, error: st === 429 ? "AI limiti tugadi, birozdan keyin urinib ko‘ring" : "AI javob bermadi" };
+  const daily = /per ?day|daily|PerDay/i.test(JSON.stringify(last?.j || {}));
+  return { ...(last || {}), ok: false, error: st === 429 ? (daily ? "Gemini’ning bepul kunlik limiti tugadi — ertaga yana ishlaydi (yoki Google AI Studio’da to‘lovli rejaga o‘ting)" : "AI limiti tugadi, birozdan keyin urinib ko‘ring") : "AI javob bermadi" };
 }
 
 export const WEB_STEPS = (sysWeb, sysNoWeb) => [
