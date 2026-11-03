@@ -7,38 +7,65 @@ service cloud.firestore {
         && exists(/databases/$(db)/documents/admins/$(request.auth.uid));
     }
 
-    function txt(d, k, mn, mx) {
-      return d[k] is string && d[k].size() >= mn && d[k].size() <= mx;
-    }
-
-    function validRequest(d) {
-      return d.keys().hasOnly(['name','phone','service','op','branch','note','lang','src','status','createdAt'])
-        && txt(d, 'name', 2, 80)
-        && d['phone'] is string && d['phone'].matches('^[+]998[0-9]{9}$')
-        && txt(d, 'service', 0, 120)
-        && txt(d, 'op', 0, 60)
-        && txt(d, 'branch', 0, 120)
-        && txt(d, 'note', 0, 600)
-        && d['lang'] in ['uz','ru']
-        && d['src'] in ['site','ai','offer']
-        && d['status'] == 'new'
-        && d['createdAt'] == request.time;
-    }
-
+    // Sayt matnlari va sozlamalari: hamma o‘qiydi, faqat admin yozadi
     match /site/{doc} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+    // Do‘kon mahsulotlari va chiroyli raqamlar: hamma ko‘radi
+    match /products/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /numbers/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Yangiliklar: chop etilganini hamma ko‘radi, qoralamalarni faqat admin
+    match /news/{id} {
+      allow read: if isAdmin() || resource.data['status'] == 'published';
+      allow write: if isAdmin();
+    }
+
+    // Mijoz baholari: tasdiqlanganini hamma ko‘radi
+    match /reviews/{id} {
+      allow read: if isAdmin() || resource.data['status'] == 'approved';
+      allow write: if isAdmin();
+    }
+
+    // Promokodlar faqat adminga ko‘rinadi (tekshirish server orqali)
+    match /promos/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // Arizalar faqat server (Netlify) orqali yaratiladi
+    match /requests/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if false;
+    }
+
+    // AI boshqaruv jurnali
+    match /ailog/{id} {
+      allow read: if isAdmin();
       allow write: if false;
     }
 
-    match /requests/{id} {
-      allow create: if validRequest(request.resource.data);
-      allow get: if isAdmin() || resource.data['createdAt'] > request.time - duration.value(10, 'm');
-      allow list, update, delete: if isAdmin();
+    // Telegram bot adminlari va foydalanuvchilari (bot server orqali yozadi)
+    match /botAdmins/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /botUsers/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Adminlar ro‘yxati: faqat Firebase Console’dan qo‘shiladi
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
     }
   }
 }

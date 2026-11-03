@@ -1,9 +1,29 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+  edge_functions = "netlify/edge-functions"
 
 [functions]
   node_bundler = "esbuild"
+
+# Server kodi va yo‘riqnomalar saytda ochiq ko‘rinmasin
+[[redirects]]
+  from = "/netlify/*"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/SOZLASH.md"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/firestore.rules"
+  to = "/"
+  status = 404
+  force = true
 
 [[headers]]
   for = "/*"
