@@ -6,6 +6,8 @@ export const num = (v) => {
   const n = Number(String(v ?? "").replace(/[^\d.]/g, ""));
   return Number.isFinite(n) ? n : 0;
 };
+// Xotira: operativ (RAM) + asosiy → “8/256GB”
+export const memL = (v) => { const r = String(v?.ram || "").trim(), m = String(v?.mem || "").trim(); if (!r) return m; const rn = r.replace(/\s*gb$/i, ""); return m ? `${rn}/${m}` : r; };
 export const cleanCode = (c) => String(c || "").toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 24);
 
 // Promokodni tekshiradi. scope: all | shop | services | numbers

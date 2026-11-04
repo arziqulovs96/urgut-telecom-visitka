@@ -1,6 +1,6 @@
 // Onlayn ariza va buyurtmalarni qabul qiladi (sayt va bot uchun bitta joy).
 import { botKeyOk, adminChats, randomId, json, ready, siteContent, getDoc, createDoc, patchDoc, tgSend, h, isOpen, fmtSum, limited, ipOf } from "../lib/fs.mjs";
-import { L, num, cleanCode, checkPromo, deliveryFor, nasiyaPlan } from "../lib/shop.mjs";
+import { L, num, cleanCode, checkPromo, deliveryFor, nasiyaPlan, memL } from "../lib/shop.mjs";
 
 const str = (v, max = 200) => String(v ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
 const rid = () => randomId(20);
@@ -38,6 +38,7 @@ export default async (req, context) => {
     const i = Number(b.svc);
     svc = Number.isInteger(i) ? (c.services || [])[i] : null;
     if (!svc) return json({ error: "service", code: "service" }, 400);
+    if (svc.online === false) return json({ error: "Bu xizmat faqat ofis va filiallarimizda ko‘rsatiladi", code: "offline" }, 400);
     r.service = L(svc.title, "uz");
     r.skind = svc.kind || "other";
     const op = (c.operators || []).find((o) => o.id === b.op);
@@ -67,7 +68,7 @@ export default async (req, context) => {
       if ((v.status || p.status) === "out") return json({ error: "out", code: "out", pid }, 400);
       const qty = Math.max(1, Math.min(10, Math.floor(Number(it.qty) || 1)));
       const price = num(v.price ?? p.price);
-      const label = [p.brand, p.name].filter(Boolean).join(" ") + ([v.mem, v.color].filter(Boolean).length ? ` (${[v.mem, v.color].filter(Boolean).join(", ")})` : "");
+      const label = [p.brand, p.name].filter(Boolean).join(" ") + ([memL(v), v.color].filter(Boolean).length ? ` (${[memL(v), v.color].filter(Boolean).join(", ")})` : "");
       r.items.push({ pid, name: label.slice(0, 160), qty, price });
       r.subtotal += price * qty;
     }
@@ -141,6 +142,7 @@ export default async (req, context) => {
   ].filter(Boolean);
   const btn = (t, s) => ({ text: t, callback_data: `rq:${id}:${s}` });
   const buttons = [[btn("✅ Qabul qildim", "work"), ...(r.fulfil === "delivery" ? [btn("🚚 Yo‘lda", "onway")] : [])], [btn("✔️ Bajarildi", "done"), btn("❌ Bekor", "cancel")]];
+  if (r.tgId) buttons.push([{ text: "✉️ Mijozga xabar yozish", callback_data: `rm:${id}` }]);
   if (r.tgUser) lines.push(`💬 Telegram: @${r.tgUser}`);
   await tgSend(lines.join("\n"), { chats: await adminChats("requests"), buttons }).catch(() => {});
 

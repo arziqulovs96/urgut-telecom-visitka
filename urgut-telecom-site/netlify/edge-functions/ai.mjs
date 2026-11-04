@@ -3,7 +3,7 @@
 // GEMINI_MODEL (ixtiyoriy; admin paneldagi model ustun turadi)
 import { env, json, ready, siteContent, listDocs, query, limited, ipOf, projectId, decFields, fmtSum, botKeyOk } from "../lib/fs.mjs";
 import { generate, WEB_STEPS, extractText, sourcesOf, searchedOf, currentModel } from "../lib/gemini.mjs";
-import { L as Lx } from "../lib/shop.mjs";
+import { L as Lx, memL } from "../lib/shop.mjs";
 
 // Service account bo‘lmasa ham sayt ma’lumotini ochiq yo‘l bilan o‘qiydi
 async function publicContent() {
@@ -66,9 +66,9 @@ function compact({ content: d, products, numbers, news }, lang) {
   out.push(`Aloqa markazi telefonlari: ${(d.phones || []).filter(Boolean).join(", ")}`);
   out.push(`Operatorlar (shu tartibda): ${ops.map((o) => o.name).join(", ")}`);
   out.push("Xizmatlar:");
-  (d.services || []).forEach((s) => out.push(`- ${L(s.title)}: ${L(s.text)}${s.online ? " (saytda onlayn ariza mumkin)" : ""}${s.delivery && d.delivery?.enabled ? " (uyga yetkazib berish bor)" : ""}`));
+  (d.services || []).forEach((s) => out.push(`- ${L(s.title)}: ${L(s.text)}${s.online !== false ? " (saytda onlayn ariza mumkin)" : " (FAQAT ofis va filiallarda, onlayn ariza yo‘q)"}${s.delivery && d.delivery?.enabled ? " (uyga yetkazib berish bor)" : ""}`));
   const gov = (d.gov || []).map(L).filter(Boolean);
-  if (gov.length) out.push(`Davlat xizmatlari markazi: my.gov.uz va boshqa davlat portallaridagi barcha xizmatlarda yordam beramiz. Eng ko‘p so‘raladiganlari: ${gov.join(", ")}.`);
+  if (gov.length) out.push(`Davlat xizmatlari markazi: davlat xizmatlari bo‘yicha onlayn arizalar, ma’lumotnomalar va boshqa xizmatlarda yordam beramiz. Eng ko‘p so‘raladiganlari: ${gov.join(", ")}.`);
   if (d.delivery?.enabled) out.push(`Yetkazib berish: bor, ${d.delivery.paid ? `narxi ${fmtSum(d.delivery.price)} so‘m` : "bepul"}.`);
   if (d.nasiya?.enabled) out.push(`Muddatli to‘lov: bor (${d.nasiya.months} oy). Aniq shartlar ofisda.`);
   const offers = (d.offers || []).filter((o) => !o.hidden);
@@ -82,7 +82,7 @@ function compact({ content: d, products, numbers, news }, lang) {
     out.push("DO‘KON (saytdagi “Do‘kon” bo‘limi; narxlar so‘mda):");
     prods.forEach((p) => {
       const vars = (p.variants || []).filter((v) => v.status !== "out");
-      const pr = vars.length ? vars.map((v) => `${[v.mem, v.color].filter(Boolean).join(" ") || "standart"}: ${fmtSum(v.price)}`).join("; ") : fmtSum(p.price);
+      const pr = vars.length ? vars.map((v) => `${[memL(v), v.color].filter(Boolean).join(" ") || "standart"}: ${fmtSum(v.price)}`).join("; ") : fmtSum(p.price);
       out.push(`- [${cats[p.cat] || "boshqa"}] ${[p.brand, p.name].filter(Boolean).join(" ")} — ${pr}${p.status === "out" || (!vars.length && (p.variants || []).length) ? " (hozir yo‘q)" : ""}${p.specs ? ` | ${String(p.specs).replace(/\s*\n\s*/g, ", ").slice(0, 200)}` : ""}${p.warranty ? ` | kafolat ${p.warranty}` : ""}`);
     });
   }
@@ -118,7 +118,8 @@ QOIDALAR:
 1. Kompaniyaga oid savollarga (ish vaqti, filiallar, telefonlar, xizmatlar, do‘kondagi mahsulotlar va narxlar, chiroyli raqamlar, yetkazib berish) pastdagi KOMPANIYA MA’LUMOTLARI asosida javob ber. Mahsulot tavsiya qilsang, do‘kondagi aniq nom va narxni ayt.
 2. ${web
     ? `Operatorlar (Ucell, Uzmobile/Uztelecom, Beeline, Mobiuz, Humans) tariflari, abonent to‘lovi, internet paketlari, daqiqa va SMS, USSD kodlar, aksiyalar, rouming va boshqa operator ma’lumotlari kompaniya bazasida YO‘Q. Bunday savollarda HAR DOIM avval Google Search bilan qidir va rasmiy saytlarni o‘qi: ucell.uz, uztelecom.uz (uzmobile), beeline.uz, mobi.uz, humans.uz. Hech qachon "bizning bazamizda yo‘q" deb to‘xtama — internetdan top.
-   Davlat xizmatlari (my.gov.uz, soliq va h.k.) bo‘yicha savollarda ham qidir, tartibni tushuntir va kompaniyamiz bu ishda yordam berishini ayt.
+   Davlat xizmatlari (soliq, ma’lumotnoma va h.k.) bo‘yicha savollarda ham qidir, tartibni tushuntir va kompaniyamiz bu ishda yordam berishini ayt. Davlat portallari yoki saytlarining nomini (masalan, domen nomlarini) javobda tilga olma — “davlat xizmatlari” deb ayt.
+   Paynet, kommunal va boshqa to‘lovlar FAQAT rasmiy ofisimiz va barcha filiallarimizda, joyida qabul qilinadi — ular uchun onlayn ariza YO‘Q, [ARIZA] belgisini qo‘yma; xushmuomalalik bilan eng yaqin filialga taklif qil.
    Javobda aniq raqamlarni (so‘m, GB, daqiqa, SMS) ko‘rsat. Oxirida bir gap bilan narxlar o‘zgarishi mumkinligini ayt.
    Tariflarni solishtirishni so‘rasa, har bir operatorni alohida qidirib, mijoz ehtiyojiga qarab eng mosini tavsiya qil.
    Kompaniyaga aloqasi yo‘q umumiy savollarga ham internetdan qidirib qisqa javob ber.`
@@ -224,9 +225,9 @@ function fallbackAnswer({ content: d, products, numbers }, q, lang) {
     if (brs.length) out.push((ru ? "**Наши филиалы:**" : "**Filiallarimiz:**") + "\n" + brs.map((b) => `- ${L(b.name)}${L(b.addr) ? ": " + L(b.addr) : ""}`).join("\n"));
   }
   if (has("vaqt", "soat", "ochiq", "время", "работ", "часы", "dam olish")) out.push((ru ? "**Время работы:** " : "**Ish vaqti:** ") + hours);
-  if (has("paynet", "to‘lov", "to'lov", "оплат", "kommunal", "коммунал")) out.push(ru ? "Принимаем оплату связи, интернета и коммунальных услуг через **Paynet** — без очереди, чек сразу." : "**Paynet** orqali aloqa, internet va kommunal to‘lovlarni navbatsiz qabul qilamiz, chek darhol beriladi.");
+  if (has("paynet", "to‘lov", "to'lov", "оплат", "kommunal", "коммунал")) out.push(ru ? "Оплату связи, интернета и коммунальных услуг через **Paynet** принимаем **в нашем офисе и во всех филиалах** — без очереди, чек сразу. Будем рады вас видеть!" : "**Paynet**, aloqa, internet va kommunal to‘lovlar **rasmiy ofisimiz va barcha filiallarimizda** qabul qilinadi — navbatsiz, chek darhol beriladi. Sizni kutib qolamiz!");
   if (has("avia", "bilet", "chipta", "билет", "рейс")) { out.push(ru ? "**Авиакасса:** поможем подобрать рейс и купить билет. Оставьте заявку — свяжемся." : "**Aviakassa:** reys tanlash va chipta olishda yordam beramiz. Ariza qoldiring — bog‘lanamiz."); order = true; }
-  if (has("davlat", "my.gov", "mygov", "госуслуг", "pasport", "паспорт", "spravka", "справк", "ma’lumotnoma")) { out.push(ru ? "**Госуслуги:** поможем подать заявление через my.gov.uz и получить справки." : "**Davlat xizmatlari:** my.gov.uz orqali ariza topshirish va ma’lumotnomalar olishda yordam beramiz."); order = true; }
+  if (has("davlat", "my.gov", "mygov", "госуслуг", "pasport", "паспорт", "spravka", "справк", "ma’lumotnoma")) { out.push(ru ? "**Госуслуги:** поможем подать онлайн-заявление и получить справки." : "**Davlat xizmatlari:** onlayn ariza topshirish va ma’lumotnomalar olishda yordam beramiz."); order = true; }
   if (!out.length) {
     out.push(ru ? `Здравствуйте! Я помогу с SIM-картами, тарифами, телефонами, платежами и филиалами. Уточните вопрос или оставьте заявку — оператор перезвонит.` : `Assalomu alaykum! SIM kartalar, tariflar, telefonlar, to‘lovlar va filiallar bo‘yicha yordam beraman. Savolingizni aniqroq yozing yoki ariza qoldiring — operatorimiz qo‘ng‘iroq qiladi.`);
     order = true;

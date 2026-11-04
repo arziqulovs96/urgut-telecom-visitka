@@ -10,7 +10,7 @@ import { runNews } from "../lib/news.mjs";
 // Chiroyli raqam: ariza bekor qilinsa yana sotuvga chiqadi, bajarilsa — sotilgan
 const numStatus = (st) => (st === "cancel" ? "free" : st === "done" ? "sold" : "reserved");
 import { buildReport } from "../lib/report.mjs";
-import { num, cleanCode } from "../lib/shop.mjs";
+import { num, cleanCode, memL } from "../lib/shop.mjs";
 
 const S = (description) => ({ type: "string", description });
 const N = (description) => ({ type: "number", description });
@@ -28,7 +28,7 @@ const READ = {
 const WRITE = {
   update_site: fn("update_site", "Sayt sozlamasi yoki matnini o‘zgartirish. path nuqta bilan: masalan delivery.price, hours.close, services.2.text.uz, promo.enabled. op=push ro‘yxatga qo‘shadi, op=remove ro‘yxatdan o‘chiradi (path oxiri indeks).", { path: S("Yo‘l"), value: S("Yangi qiymat JSON ko‘rinishida: \"matn\", 25000, true, {\"uz\":\"..\",\"ru\":\"..\"}"), op: S("set|push|remove") }, ["path"]),
   set_request_status: fn("set_request_status", "Ariza holatini o‘zgartirish.", { code: S("Ariza kodi (6 belgi)"), status: S("new|work|onway|done|cancel"), note: S("Admin izohi (ixtiyoriy)") }, ["code", "status"]),
-  save_product: fn("save_product", "Mahsulot qo‘shish yoki tahrirlash. data JSON: {cat, brand, name, desc:{uz,ru}, specs, warranty, status(in|out|order), hidden, variants:[{color,hex,mem,price,old,status}], imgs:[]}. Tahrirda faqat o‘zgaradigan maydonlar.", { id: S("Mavjud mahsulot ID (yangi bo‘lsa bo‘sh)"), data: S("JSON") }, ["data"]),
+  save_product: fn("save_product", "Mahsulot qo‘shish yoki tahrirlash. data JSON: {cat, brand, name, desc:{uz,ru}, specs, warranty, status(in|out|order), hidden, variants:[{color,hex,ram,mem,price,old,status}] (ram — operativ xotira, masalan 8GB; mem — asosiy xotira, masalan 256GB), imgs:[]}. Tahrirda faqat o‘zgaradigan maydonlar.", { id: S("Mavjud mahsulot ID (yangi bo‘lsa bo‘sh)"), data: S("JSON") }, ["data"]),
   delete_product: fn("delete_product", "Mahsulotni o‘chirish.", { id: S("Mahsulot ID") }, ["id"]),
   save_news: fn("save_news", "Yangilik qo‘shish yoki tahrirlash. data JSON: {title:{uz,ru}, body:{uz,ru}, status(published|draft), op, img}.", { id: S("Mavjud yangilik ID (yangi bo‘lsa bo‘sh)"), data: S("JSON") }, ["data"]),
   delete_news: fn("delete_news", "Yangilikni o‘chirish.", { id: S("Yangilik ID") }, ["id"]),
@@ -38,7 +38,26 @@ const WRITE = {
   delete_number: fn("delete_number", "Chiroyli raqamni o‘chirish.", { id: S("ID") }, ["id"]),
   fetch_news_now: fn("fetch_news_now", "AI hozir operatorlarning rasmiy saytlaridan yangiliklar qidirsin.", { operator: S("Operator ID (bo‘sh = hammasi)") }),
   send_report_now: fn("send_report_now", "Kechagi kun hisobotini hozir Telegram’ga yuborish."),
+  set_requests_status: fn("set_requests_status", "Bir nechta arizaning holatini birdaniga o‘zgartirish (masalan, hamma yangi arizalarni qabul qilish: from=new, to=work). Mijozga holat haqida bot orqali avtomatik xabar boradi.", { from: S("Qaysi holatdagilar: new|work|onway|done|cancel|all"), to: S("Yangi holat: work|onway|done|cancel"), codes: S("Faqat shu kodlar, vergul bilan (ixtiyoriy)"), days: N("Oxirgi necha kun (ixtiyoriy, standart 60)") }, ["from", "to"]),
+  message_customers: fn("message_customers", "Ariza qoldirgan mijozlarga Telegram bot orqali xabar yuborish (masalan, “Tanlovingiz uchun rahmat”). Faqat bot orqali kelgan arizalar egalariga yetadi; saytdan kelganlarda faqat telefon bor.", { text: S("Xabar matni (mijoz tilida, xushmuomala)"), status: S("Qaysi holatdagi arizalar egalariga: new|work|onway|done|cancel|all"), codes: S("Faqat shu kodlar, vergul bilan (ixtiyoriy)"), days: N("Oxirgi necha kun (ixtiyoriy, standart 60)") }, ["text"]),
 };
+
+// Ariza tanlash (ommaviy amallar uchun)
+async function pickRequests({ status, codes, days }) {
+  const list = String(codes || "").split(/[\s,;]+/).map((x) => x.trim().toUpperCase()).filter(Boolean);
+  const since = new Date(Date.now() - Math.min(365, Math.max(1, Number(days) || 60)) * 86400e3);
+  let rows = await requestsSince(since);
+  if (list.length) rows = rows.filter((r) => list.includes(String(r.code || "").toUpperCase()));
+  if (status && status !== "all") rows = rows.filter((r) => (r.status || "new") === status);
+  return rows;
+}
+async function tgOne(chat, text) {
+  const token = (globalThis.Netlify?.env?.get?.("TG_BOT_TOKEN") ?? (typeof process !== "undefined" ? process.env?.TG_BOT_TOKEN : "")) || "";
+  if (!token) return false;
+  const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: chat, text, parse_mode: "HTML", disable_web_page_preview: true }) }).catch(() => null);
+  return !!r?.ok;
+}
+const esc = (x) => String(x ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const parse = (v) => {
   if (typeof v !== "string") return v;
@@ -130,7 +149,16 @@ async function describe(name, a) {
         : `Sozlama “${a.path}”: ${short(stripMedia(old ?? null), 80)} → ${short(parse(a.value))}`;
     }
     case "set_request_status": return `Ariza #${String(a.code).toUpperCase()} holati → ${STATUS[a.status] || a.status}${a.note ? ` (izoh: ${a.note})` : ""}`;
-    case "save_product": return `${a.id ? "Mahsulot tahrirlanadi" : "Yangi mahsulot qo‘shiladi"}: ${short([d?.brand, d?.name].filter(Boolean).join(" ") || a.id)}${Array.isArray(d?.variants) ? ` — ${d.variants.map((v) => `${[v.mem, v.color].filter(Boolean).join(" ")} ${fmtSum(v.price)} so‘m`).join("; ")}` : ""}`;
+    case "set_requests_status": {
+      const rows = (await pickRequests({ status: a.from, codes: a.codes, days: a.days })).filter((r) => r.status !== a.to);
+      return `${rows.length} ta ariza holati → ${STATUS[a.to] || a.to}${a.from && a.from !== "all" ? ` (hozir: ${STATUS[a.from] || a.from})` : ""}`;
+    }
+    case "message_customers": {
+      const rows = await pickRequests({ status: a.status || "all", codes: a.codes, days: a.days });
+      const n = new Set(rows.filter((r) => r.tgId).map((r) => String(r.tgId))).size;
+      return `${n} ta mijozga Telegram xabari: “${short(a.text, 200)}”` + (rows.length - rows.filter((r) => r.tgId).length ? ` (${rows.length - rows.filter((r) => r.tgId).length} ta saytdan kelgan arizada Telegram yo‘q)` : "");
+    }
+    case "save_product": return `${a.id ? "Mahsulot tahrirlanadi" : "Yangi mahsulot qo‘shiladi"}: ${short([d?.brand, d?.name].filter(Boolean).join(" ") || a.id)}${Array.isArray(d?.variants) ? ` — ${d.variants.map((v) => `${[memL(v), v.color].filter(Boolean).join(" ")} ${fmtSum(v.price)} so‘m`).join("; ")}` : ""}`;
     case "delete_product": return `Mahsulot o‘chiriladi: ${a.id}`;
     case "save_news": return `${a.id ? "Yangilik tahrirlanadi" : "Yangi yangilik"}: “${short(d?.title?.uz || a.id, 90)}” (${d?.status === "draft" ? "qoralama" : "chop etiladi"})`;
     case "delete_news": return `Yangilik o‘chiriladi: ${a.id}`;
@@ -151,7 +179,7 @@ const cleanProduct = (d) => {
   if (d.hidden !== undefined) o.hidden = !!d.hidden;
   if (Array.isArray(d.imgs)) o.imgs = d.imgs.filter((x) => typeof x === "string" && /^https:\/\//.test(x)).slice(0, 10);
   if (Array.isArray(d.variants)) o.variants = d.variants.slice(0, 30).map((v) => ({
-    color: String(v.color || "").slice(0, 40), hex: /^#[0-9a-f]{6}$/i.test(v.hex || "") ? v.hex : "", mem: String(v.mem || "").slice(0, 40),
+    color: String(v.color || "").slice(0, 40), hex: /^#[0-9a-f]{6}$/i.test(v.hex || "") ? v.hex : "", ram: String(v.ram || "").slice(0, 20), mem: String(v.mem || "").slice(0, 40),
     price: num(v.price), old: num(v.old), status: ["in", "out", "order"].includes(v.status) ? v.status : "in",
   }));
   return o;
@@ -231,6 +259,25 @@ async function runWrite(name, a, who) {
       return `${n} ta yangi yangilik` + (n ? ": " + r.filter((x) => x.added).map((x) => `${x.op} — ${x.added}`).join(", ") : " topilmadi (operatorlarda so‘nggi 14 kunda yangilik yo‘q yoki hammasi avval qo‘shilgan)");
     }
     case "send_report_now": await tgSend(await buildReport(await siteContent(0))); return "Yuborildi";
+    case "set_requests_status": {
+      if (!STATUS[a.to]) throw new Error("Yangi holat noto‘g‘ri");
+      const rows = (await pickRequests({ status: a.from, codes: a.codes, days: a.days })).filter((r) => r.status !== a.to).slice(0, 200);
+      for (const r of rows) {
+        await patchDoc(`requests/${r.id}`, { status: a.to, handledBy: who.email }, { serverTime: ["statusAt"] });
+        if (r.numId) await patchDoc(`numbers/${r.numId}`, { status: numStatus(a.to) }).catch(() => {});
+      }
+      return rows.length ? `${rows.length} ta ariza → ${STATUS[a.to]} (${rows.map((r) => "#" + r.code).slice(0, 15).join(", ")}${rows.length > 15 ? "…" : ""})` : "Mos ariza topilmadi";
+    }
+    case "message_customers": {
+      const text = String(a.text || "").trim().slice(0, 3000);
+      if (text.length < 2) throw new Error("Xabar matni bo‘sh");
+      const rows = await pickRequests({ status: a.status || "all", codes: a.codes, days: a.days });
+      const chats = [...new Set(rows.filter((r) => r.tgId).map((r) => String(r.tgId)))].slice(0, 300);
+      const noTg = rows.filter((r) => !r.tgId).length;
+      let ok = 0;
+      for (const c of chats) if (await tgOne(c, `📩 <b>URGUT TELECOM</b>\n\n${esc(text)}`)) ok++;
+      return `${ok} ta mijozga yuborildi` + (chats.length - ok ? `, ${chats.length - ok} tasiga yetmadi (botni bloklagan)` : "") + (noTg ? `; ${noTg} ta ariza saytdan — ularda Telegram yo‘q, faqat telefon` : "");
+    }
   }
   throw new Error("Noma’lum amal");
 }
