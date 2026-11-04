@@ -69,19 +69,25 @@ export const searchedOf = (j) => (j?.candidates?.[0]?.groundingMetadata?.webSear
  * accept(res) — javob qabul qilinadimi (masalan matn bor yoki functionCall bor)
  * Model topilmasa (404) keyingi zaxira modelga o‘tiladi.
  */
+let searchBlockedUntil = 0; // Google Search limiti tugasa — 10 daqiqa qidiruvsiz ishlaymiz
 export async function generate({ content, sys, contents, steps, accept = (r) => !!extractText(r.j) || functionCalls(r.j).length > 0, jsonOut, maxTokens, onlyModel }) {
   const key = env("GEMINI_API_KEY");
   if (!key) return { ok: false, status: 503, error: "GEMINI_API_KEY sozlanmagan" };
   const tried = new Set();
   const queue = onlyModel ? [onlyModel] : [...new Set([autoModel, wantedModel(content), ...FALLBACKS].filter(Boolean))];
-  let last = null, discovered = !!onlyModel, waited = false;
+  const isSearch = (st) => (st.tools || []).some((t) => t.google_search || t.url_context);
+  const allSearch = steps.every(isSearch); // masalan yangiliklar: qidiruvsiz ma’nosi yo‘q
+  let last = null, discovered = !!onlyModel, waited = false, noSearch = !allSearch && Date.now() < searchBlockedUntil;
   while (queue.length) {
     const model = queue.shift();
     if (tried.has(model)) continue;
     tried.add(model);
     let notFound = false;
     for (const st of steps) {
+      const searchStep = isSearch(st);
+      if (searchStep && noSearch) continue; // qidiruv limiti tugagan — qidiruvsiz qadamga o‘tamiz
       let res = await call({ key, model, sys: st.sys ?? sys, contents, tools: st.tools, thinking: st.thinking, jsonOut, maxTokens });
+      if (res.status === 429 && searchStep && !allSearch) { noSearch = true; searchBlockedUntil = Date.now() + 10 * 60e3; last = { ...res, model, step: st, searchBlocked: true }; continue; }
       if (res.status === 429 && !waited && !/per ?day|daily|PerDay/i.test(JSON.stringify(res.j))) {
         waited = true;
         // Daqiqalik limit: biroz kutib bir marta qayta urinamiz
@@ -95,7 +101,7 @@ export async function generate({ content, sys, contents, steps, accept = (r) => 
         return last;
       }
       if (res.status === 404) { notFound = true; break; }
-      if (res.status === 429 && !st.tools?.length) break; // bu modelning limiti tugadi — keyingi zaxira modelga o‘tamiz (qidiruvli qadam bo‘lsa, avval qidiruvsizini sinaymiz)
+      if (res.status === 429) break; // bu modelning limiti tugadi — keyingi zaxira modelga o‘tamiz
       if (res.status === 401 || res.status === 403) return { ...last, ok: false, error: "Gemini kaliti noto‘g‘ri yoki faol emas" };
     }
     if (!queue.length && !discovered) {
@@ -105,6 +111,8 @@ export async function generate({ content, sys, contents, steps, accept = (r) => 
     }
   }
   const st = last?.status;
+  if (allSearch && last?.status === 429)
+    return { ...(last || {}), ok: false, status: 429, error: "Internetdan qidirish (Google Search) hozir ishlamayapti — Gemini’ning bepul rejasida bu imkoniyat yo‘q yoki limiti tugagan. Google AI Studio’da to‘lovni (billing) yoqsangiz ishlaydi." };
   const daily = /per ?day|daily|PerDay/i.test(JSON.stringify(last?.j || {}));
   return { ...(last || {}), ok: false, error: st === 429 ? (daily ? "Gemini’ning bepul kunlik limiti tugadi — ertaga yana ishlaydi (yoki Google AI Studio’da to‘lovli rejaga o‘ting)" : "AI limiti tugadi, birozdan keyin urinib ko‘ring") : "AI javob bermadi" };
 }

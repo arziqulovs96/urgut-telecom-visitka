@@ -300,9 +300,17 @@ export default async (req) => {
   const tools = [{ functionDeclarations: [...Object.values(READ), ...Object.values(WRITE)] }];
   const sys = systemPrompt(c, who);
   const contents = [...hist];
+  const t0 = Date.now();
+  let pinned = "";
   for (let i = 0; i < 6; i++) {
-    const res = await generate({ content: c, sys, contents, steps: [{ tools, thinking: true }, { tools, thinking: false }] });
-    if (!res.ok) return json({ error: res.error || "AI javob bermadi" }, 502);
+    if (i && Date.now() - t0 > 20000) return json({ text: "⏳ AI bu safar ulgurmadi (Gemini bepul rejasida daqiqasiga juda kam so‘rov ruxsat). Bir daqiqadan keyin buyruqni qayta yozing." });
+    // Bir suhbat davomida bitta model: Gemini 3 “thought signature”lari boshqa modelga o‘tmaydi
+    const res = await generate({ content: c, sys, contents, onlyModel: pinned || undefined, steps: [{ tools, thinking: true }, { tools, thinking: false }] });
+    if (!res.ok) {
+      const why = String(res.j?.error?.message || "").replace(/\s+/g, " ").slice(0, 220);
+      return json({ error: (res.error || "AI javob bermadi") + (why ? ` — Google: ${why}` : "") }, 502);
+    }
+    pinned = res.model;
     const calls = functionCalls(res.j);
     const text = extractText(res.j);
     if (!calls.length) return json({ text: text || "Tushunmadim, aniqroq yozing." });
