@@ -1911,7 +1911,7 @@ cms.addEventListener("input",e=>{
 cms.addEventListener("change",async e=>{
  const x=e.target;
  if(await ADMX.change(e))return;
- if(x.dataset.rqs){try{await fb.db.collection("requests").doc(x.dataset.rqs).update({status:x.value,handledBy:(user&&user.email||"").split("@")[0],statusAt:fb.FV.serverTimestamp()})}catch(er){alert("Holatni o‘zgartirib bo‘lmadi: "+(er.code||er.message))}return}
+ if(x.dataset.rqs){try{const ref=fb.db.collection("requests").doc(x.dataset.rqs);await ref.update({status:x.value,handledBy:(user&&user.email||"").split("@")[0],statusAt:fb.FV.serverTimestamp()});const rq=(await ref.get()).data()||{};if(rq.numId){await fb.db.collection("numbers").doc(rq.numId).update({status:x.value==="cancel"?"free":x.value==="done"?"sold":"reserved"}).catch(()=>{})}}catch(er){alert("Holatni o‘zgartirib bo‘lmadi: "+(er.code||er.message))}return}
  if(x.dataset.rqn!=null&&x.dataset.rqn){try{await fb.db.collection("requests").doc(x.dataset.rqn).update({anote:x.value.slice(0,300)});x.style.borderColor="#1FA97A"}catch(er){alert("Saqlab bo‘lmadi: "+(er.code||er.message))}return}
  if(x.id==="rqStat"){rqFilter=x.value;redrawContent();return}
  if(x.dataset.pb){setP(x.dataset.pb,x.checked);isDirty=true;redrawContent();setStat("Saqlanmagan o‘zgarishlar","dirty");return}

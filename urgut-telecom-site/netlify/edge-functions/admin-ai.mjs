@@ -7,6 +7,8 @@ import {
 import { generate, extractText, functionCalls, searchedOf, currentModel } from "../lib/gemini.mjs";
 import { requestsSince, summarize, dayStart, STATUS } from "../lib/stats.mjs";
 import { runNews } from "../lib/news.mjs";
+// Chiroyli raqam: ariza bekor qilinsa yana sotuvga chiqadi, bajarilsa — sotilgan
+const numStatus = (st) => (st === "cancel" ? "free" : st === "done" ? "sold" : "reserved");
 import { buildReport } from "../lib/report.mjs";
 import { num, cleanCode } from "../lib/shop.mjs";
 
@@ -170,6 +172,7 @@ async function runWrite(name, a, who) {
       const [r] = await query("requests", { where: [["code", "EQUAL", String(a.code).toUpperCase()]], limit: 1 });
       if (!r) throw new Error("Ariza topilmadi");
       await patchDoc(`requests/${r.id}`, { status: a.status, handledBy: who.email, ...(a.note ? { anote: String(a.note).slice(0, 300) } : {}) }, { serverTime: ["statusAt"] });
+      if (r.numId) await patchDoc(`numbers/${r.numId}`, { status: numStatus(a.status) }).catch(() => {});
       return `#${r.code} → ${STATUS[a.status]}`;
     }
     case "save_product": {

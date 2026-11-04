@@ -173,12 +173,66 @@ export default async (req, context) => {
     const again = await generate({ content: d, contents: mk(hint + " Hozir Google Search ishlatmading — albatta ishlat."), steps: steps.slice(0, 2) });
     if (again.ok && searchedOf(again.j)) res = again;
   }
-  if (!res.ok) return json({ error: res.error || "AI javob bermadi" }, 502);
+  if (!res.ok) {
+    // AI vaqtincha ishlamasa ham mijoz bo‘sh qolmasin: sayt ma’lumotlaridan foydali javob
+    const fb = fallbackAnswer(cv, q, lang);
+    if (fb) return json({ ...fb, sources: [], model: "", web: false, fallback: true });
+    return json({ error: res.error || "AI javob bermadi" }, 502);
+  }
 
   let text = extractText(res.j);
   const order = /\[ARIZA\]/i.test(text);
   text = text.replace(/\s*\[ARIZA\]\s*/gi, "\n").trim();
   return json({ text, sources: sourcesOf(res.j).slice(0, 5), order, model: res.model, web: searchedOf(res.j) });
 };
+
+// AI (Gemini) ishlamay qolganda: savoldagi so‘zlarga qarab sayt ma’lumotlaridan tayyor javob
+function fallbackAnswer({ content: d, products, numbers }, q, lang) {
+  if (!d) return null;
+  const ru = lang === "ru", L = (o) => Lx(o, lang), low = q.toLowerCase();
+  const has = (...w) => w.some((x) => low.includes(x));
+  const ops = (d.operators || []).filter((o) => !o.hidden);
+  const opName = (id) => ops.find((o) => o.id === id)?.name || "";
+  const phones = (d.phones || []).slice(0, 3).join(", ");
+  const days = { all: ru ? "ежедневно" : "har kuni", monsat: ru ? "пн–сб" : "dushanba–shanba", monfri: ru ? "пн–пт" : "dushanba–juma" };
+  const hours = `${days[d.hours?.days] || days.all} ${d.hours?.open || ""}–${d.hours?.close || ""}`;
+  const out = [];
+  let order = false;
+  if (has("sim", "esim", "tarif", "тариф", "сим", "raqam ol", "nomer ol", "ucell", "beeline", "uzmobile", "mobiuz", "оператор")) {
+    const offers = (d.offers || []).filter((o) => !o.hidden).slice(0, 6);
+    out.push(ru ? "**SIM-карты в Urgut Telecom** — Ucell, Uzmobile, Beeline, Mobiuz, обычная SIM или eSIM. Оформление ~10 минут, нужен паспорт." : "**Urgut Telecom’da SIM kartalar** — Ucell, Uzmobile, Beeline, Mobiuz; oddiy SIM yoki eSIM. Rasmiylashtirish ~10 daqiqa, pasport kerak.");
+    offers.forEach((o) => out.push(`- ${L(o.title)}${o.op ? ` (${opName(o.op)})` : ""}${o.price ? ` — ${o.price}` : ""}`));
+    order = true;
+  }
+  if (has("chiroyli", "krasiv", "красив", "oltin", "золот")) {
+    const free = (numbers || []).filter((n) => !n.status || n.status === "free").slice(0, 5);
+    if (free.length) out.push((ru ? "**Красивые номера:**" : "**Chiroyli raqamlar:**") + "\n" + free.map((n) => `- ${n.num} (${opName(n.op)}) — ${fmtSum(n.price)} ${ru ? "сум" : "so‘m"}`).join("\n"));
+    order = true;
+  }
+  if (has("telefon", "smartfon", "телефон", "смартфон", "iphone", "samsung", "redmi", "xiaomi", "narx", "цена", "стоим", "aksessuar", "аксессуар", "quloqchin", "naushnik", "наушник", "zaryad", "заряд")) {
+    const ps = (products || []).filter((p) => !p.hidden).filter((p) => { const n = `${p.brand || ""} ${p.name || ""}`.toLowerCase(); return n.split(/\s+/).some((w) => w.length > 2 && low.includes(w)); });
+    const list = (ps.length ? ps : (products || []).filter((p) => !p.hidden)).slice(0, 6);
+    if (list.length) {
+      out.push(ru ? "**Из нашего магазина:**" : "**Do‘konimizdan:**");
+      list.forEach((p) => { const vs = (p.variants || []).filter((v) => v.status !== "out"); const min = Math.min(...vs.map((v) => Number(v.price) || 0).filter(Boolean)); out.push(`- ${[p.brand, p.name].filter(Boolean).join(" ")}${Number.isFinite(min) ? ` — ${ru ? "от" : ""} ${fmtSum(min)} ${ru ? "сум" : "so‘m"}${ru ? "" : "dan"}` : ""}`); });
+      out.push(ru ? "Цвет и память можно выбрать в разделе «Магазин»." : "Rang va xotirani «Do‘kon» bo‘limida tanlaysiz.");
+      order = true;
+    }
+  }
+  if (has("manzil", "qayer", "filial", "адрес", "где", "филиал", "lokatsiya", "joylash")) {
+    const brs = (d.branches || []).filter((b) => !b.hidden);
+    if (brs.length) out.push((ru ? "**Наши филиалы:**" : "**Filiallarimiz:**") + "\n" + brs.map((b) => `- ${L(b.name)}${L(b.addr) ? ": " + L(b.addr) : ""}`).join("\n"));
+  }
+  if (has("vaqt", "soat", "ochiq", "время", "работ", "часы", "dam olish")) out.push((ru ? "**Время работы:** " : "**Ish vaqti:** ") + hours);
+  if (has("paynet", "to‘lov", "to'lov", "оплат", "kommunal", "коммунал")) out.push(ru ? "Принимаем оплату связи, интернета и коммунальных услуг через **Paynet** — без очереди, чек сразу." : "**Paynet** orqali aloqa, internet va kommunal to‘lovlarni navbatsiz qabul qilamiz, chek darhol beriladi.");
+  if (has("avia", "bilet", "chipta", "билет", "рейс")) { out.push(ru ? "**Авиакасса:** поможем подобрать рейс и купить билет. Оставьте заявку — свяжемся." : "**Aviakassa:** reys tanlash va chipta olishda yordam beramiz. Ariza qoldiring — bog‘lanamiz."); order = true; }
+  if (has("davlat", "my.gov", "mygov", "госуслуг", "pasport", "паспорт", "spravka", "справк", "ma’lumotnoma")) { out.push(ru ? "**Госуслуги:** поможем подать заявление через my.gov.uz и получить справки." : "**Davlat xizmatlari:** my.gov.uz orqali ariza topshirish va ma’lumotnomalar olishda yordam beramiz."); order = true; }
+  if (!out.length) {
+    out.push(ru ? `Здравствуйте! Я помогу с SIM-картами, тарифами, телефонами, платежами и филиалами. Уточните вопрос или оставьте заявку — оператор перезвонит.` : `Assalomu alaykum! SIM kartalar, tariflar, telefonlar, to‘lovlar va filiallar bo‘yicha yordam beraman. Savolingizni aniqroq yozing yoki ariza qoldiring — operatorimiz qo‘ng‘iroq qiladi.`);
+    order = true;
+  }
+  if (phones) out.push((ru ? "📞 Телефон: " : "📞 Telefon: ") + phones + (ru ? `. Время работы: ${hours}.` : `. Ish vaqti: ${hours}.`));
+  return { text: out.join("\n"), order };
+}
 
 export const config = { path: "/api/ai" };

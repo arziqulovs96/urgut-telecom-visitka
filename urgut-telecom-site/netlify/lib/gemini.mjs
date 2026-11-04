@@ -95,7 +95,7 @@ export async function generate({ content, sys, contents, steps, accept = (r) => 
         return last;
       }
       if (res.status === 404) { notFound = true; break; }
-      if (res.status === 429) break; // bu modelning limiti tugadi — keyingi zaxira modelga o‘tamiz
+      if (res.status === 429 && !st.tools?.length) break; // bu modelning limiti tugadi — keyingi zaxira modelga o‘tamiz (qidiruvli qadam bo‘lsa, avval qidiruvsizini sinaymiz)
       if (res.status === 401 || res.status === 403) return { ...last, ok: false, error: "Gemini kaliti noto‘g‘ri yoki faol emas" };
     }
     if (!queue.length && !discovered) {
