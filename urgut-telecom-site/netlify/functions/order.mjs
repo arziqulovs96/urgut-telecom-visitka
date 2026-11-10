@@ -69,7 +69,10 @@ export default async (req, context) => {
       const qty = Math.max(1, Math.min(10, Math.floor(Number(it.qty) || 1)));
       const price = num(v.price ?? p.price);
       const label = [p.brand, p.name].filter(Boolean).join(" ") + ([memL(v), v.color].filter(Boolean).length ? ` (${[memL(v), v.color].filter(Boolean).join(", ")})` : "");
-      r.items.push({ pid, name: label.slice(0, 160), qty, price });
+      const tars = Array.isArray(p.tariffs) ? p.tariffs.filter((x) => x && x.name) : [];
+      const tr = it.t != null && it.t !== "" ? tars[Math.max(0, Math.min(tars.length - 1, Number(it.t) || 0))] : null;
+      const tlab = tr ? ` · Tarif: ${tr.name}${num(tr.price) ? ` (${fmtSum(num(tr.price))} so‘m${tr.period === "once" ? "" : tr.period === "day" ? "/kun" : "/oy"})` : ""}` : "";
+      r.items.push({ pid, name: (label + tlab).slice(0, 200), qty, price });
       r.subtotal += price * qty;
     }
     r.service = "Do‘kon buyurtmasi";
@@ -95,6 +98,8 @@ export default async (req, context) => {
     if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) r.loc = { lat, lng };
     if (!r.address && !r.loc) return json({ error: "address", code: "address" }, 400);
     r.deliveryFee = dl.fee;
+  } else if (b.fulfil === "online" && kind === "service" && svc?.remote) {
+    r.fulfil = "online"; // masofadan — operator qo‘ng‘iroq qilib, onlayn rasmiylashtiradi
   } else {
     r.fulfil = "office";
     const br = (c.branches || []).filter((x) => !x.hidden);
@@ -131,9 +136,9 @@ export default async (req, context) => {
     `🆕 <b>${kind === "shop" ? "Yangi buyurtma" : "Yangi ariza"}</b> #${r.code}`,
     `👤 ${h(r.name)}  📞 ${h(r.phone)}`,
     `🛎 ${h(r.service)}${r.op ? " · " + h(r.op) : ""}`,
-    ...Object.entries(r.details).filter(([, v]) => v).map(([k, v]) => `• ${({ simType: "SIM turi", gov: "Davlat xizmati", from: "Qayerdan", to: "Qayerga", date: "Sana" })[k] || k}: ${h(v)}`),
+    ...Object.entries(r.details).filter(([, v]) => v).map(([k, v]) => `• ${({ simType: "SIM turi", gov: "Yagona darcha xizmati", from: "Qayerdan", to: "Qayerga", date: "Sana" })[k] || k}: ${h(v)}`),
     ...r.items.map((it) => `• ${h(it.name)} × ${it.qty} = ${fmtSum(it.price * it.qty)} so‘m`),
-    r.fulfil === "delivery" ? `🚚 Yetkazib berish${r.address ? ": " + h(r.address) : ""}${r.loc ? `\n📍 https://maps.google.com/?q=${r.loc.lat},${r.loc.lng}` : ""}` : `🏢 Ofisda: ${h(r.branch)}`,
+    r.fulfil === "delivery" ? `🚚 Yetkazib berish${r.address ? ": " + h(r.address) : ""}${r.loc ? `\n📍 https://maps.google.com/?q=${r.loc.lat},${r.loc.lng}` : ""}` : r.fulfil === "online" ? "💻 Onlayn (masofadan) — mijozga qo‘ng‘iroq qiling" : `🏢 Ofisda: ${h(r.branch)}`,
     r.promo ? `🎟 Promokod: ${h(r.promo)} (−${fmtSum(r.discount)} so‘m)` : "",
     r.total ? `💰 Jami: <b>${fmtSum(r.total)} so‘m</b>${r.deliveryFee ? ` (yetkazish ${fmtSum(r.deliveryFee)})` : ""}` : "",
     r.pay === "nasiya" ? `📆 Muddatli to‘lov: ${r.nasiya.months} oy × ${fmtSum(r.nasiya.monthly)} so‘m` : "",

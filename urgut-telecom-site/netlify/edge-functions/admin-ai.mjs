@@ -28,7 +28,7 @@ const READ = {
 const WRITE = {
   update_site: fn("update_site", "Sayt sozlamasi yoki matnini o‘zgartirish. path nuqta bilan: masalan delivery.price, hours.close, services.2.text.uz, promo.enabled. op=push ro‘yxatga qo‘shadi, op=remove ro‘yxatdan o‘chiradi (path oxiri indeks).", { path: S("Yo‘l"), value: S("Yangi qiymat JSON ko‘rinishida: \"matn\", 25000, true, {\"uz\":\"..\",\"ru\":\"..\"}"), op: S("set|push|remove") }, ["path"]),
   set_request_status: fn("set_request_status", "Ariza holatini o‘zgartirish.", { code: S("Ariza kodi (6 belgi)"), status: S("new|work|onway|done|cancel"), note: S("Admin izohi (ixtiyoriy)") }, ["code", "status"]),
-  save_product: fn("save_product", "Mahsulot qo‘shish yoki tahrirlash. data JSON: {cat, brand, name, desc:{uz,ru}, specs, warranty, status(in|out|order), hidden, variants:[{color,hex,ram,mem,price,old,status}] (ram — operativ xotira, masalan 8GB; mem — asosiy xotira, masalan 256GB), imgs:[]}. Tahrirda faqat o‘zgaradigan maydonlar.", { id: S("Mavjud mahsulot ID (yangi bo‘lsa bo‘sh)"), data: S("JSON") }, ["data"]),
+  save_product: fn("save_product", "Mahsulot qo‘shish yoki tahrirlash. data JSON: {cat, brand, name, desc:{uz,ru}, specs, warranty, status(in|out|order), hidden, variants:[{color,hex,ram,mem,price,old,status}] (ram — operativ xotira, masalan 8GB; mem — asosiy xotira, masalan 256GB), tariffs:[{name,price,period:month|day|once,info}] (Wi-Fi router/modem tariflari), imgs:[]}. Tahrirda faqat o‘zgaradigan maydonlar.", { id: S("Mavjud mahsulot ID (yangi bo‘lsa bo‘sh)"), data: S("JSON") }, ["data"]),
   delete_product: fn("delete_product", "Mahsulotni o‘chirish.", { id: S("Mahsulot ID") }, ["id"]),
   save_news: fn("save_news", "Yangilik qo‘shish yoki tahrirlash. data JSON: {title:{uz,ru}, body:{uz,ru}, status(published|draft), op, img}.", { id: S("Mavjud yangilik ID (yangi bo‘lsa bo‘sh)"), data: S("JSON") }, ["data"]),
   delete_news: fn("delete_news", "Yangilikni o‘chirish.", { id: S("Yangilik ID") }, ["id"]),
@@ -182,6 +182,9 @@ const cleanProduct = (d) => {
     color: String(v.color || "").slice(0, 40), hex: /^#[0-9a-f]{6}$/i.test(v.hex || "") ? v.hex : "", ram: String(v.ram || "").slice(0, 20), mem: String(v.mem || "").slice(0, 40),
     price: num(v.price), old: num(v.old), status: ["in", "out", "order"].includes(v.status) ? v.status : "in",
   }));
+  if (Array.isArray(d.tariffs)) o.tariffs = d.tariffs.slice(0, 20).map((x) => ({
+    name: String(x.name || "").slice(0, 80), price: num(x.price), period: ["month", "day", "once"].includes(x.period) ? x.period : "month", info: String(x.info || "").slice(0, 200),
+  })).filter((x) => x.name);
   return o;
 };
 
@@ -205,8 +208,11 @@ async function runWrite(name, a, who) {
     }
     case "save_product": {
       const id = a.id || randomId(16);
-      if (a.id && !(await getDoc(`products/${id}`))) throw new Error("Mahsulot topilmadi");
-      await setDoc(`products/${id}`, { ...cleanProduct(d), ...(a.id ? {} : { createdAt: new Date() }) });
+      const cur = a.id ? await getDoc(`products/${id}`) : null;
+      if (a.id && !cur) throw new Error("Mahsulot topilmadi");
+      if (cur) { delete cur.id; delete cur._ut; }
+      // Tahrirlashda faqat aytilgan maydonlar o‘zgaradi (rasmlar, tariflar va boshqalar saqlanib qoladi)
+      await setDoc(`products/${id}`, { ...(cur || {}), ...cleanProduct(d), ...(a.id ? {} : { createdAt: new Date() }) });
       return `Mahsulot saqlandi (ID ${id})`;
     }
     case "delete_product": await deleteDoc(`products/${a.id}`); return "O‘chirildi";

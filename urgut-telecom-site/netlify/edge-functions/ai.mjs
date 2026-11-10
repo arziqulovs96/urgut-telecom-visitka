@@ -3,7 +3,7 @@
 // GEMINI_MODEL (ixtiyoriy; admin paneldagi model ustun turadi)
 import { env, json, ready, siteContent, listDocs, query, limited, ipOf, projectId, decFields, fmtSum, botKeyOk } from "../lib/fs.mjs";
 import { generate, WEB_STEPS, extractText, sourcesOf, searchedOf, currentModel } from "../lib/gemini.mjs";
-import { L as Lx, memL } from "../lib/shop.mjs";
+import { L as Lx, memL, num } from "../lib/shop.mjs";
 
 // Service account bo‘lmasa ham sayt ma’lumotini ochiq yo‘l bilan o‘qiydi
 async function publicContent() {
@@ -68,7 +68,7 @@ function compact({ content: d, products, numbers, news }, lang) {
   out.push("Xizmatlar:");
   (d.services || []).forEach((s) => out.push(`- ${L(s.title)}: ${L(s.text)}${s.online !== false ? " (saytda onlayn ariza mumkin)" : " (FAQAT ofis va filiallarda, onlayn ariza yo‘q)"}${s.delivery && d.delivery?.enabled ? " (uyga yetkazib berish bor)" : ""}`));
   const gov = (d.gov || []).map(L).filter(Boolean);
-  if (gov.length) out.push(`Davlat xizmatlari markazi: davlat xizmatlari bo‘yicha onlayn arizalar, ma’lumotnomalar va boshqa xizmatlarda yordam beramiz. Eng ko‘p so‘raladiganlari: ${gov.join(", ")}.`);
+  if (gov.length) out.push(`Yagona darcha xizmatlari: arizalar, ma’lumotnomalar, ruxsatnomalar va boshqa davlat xizmatlari — onlayn (masofadan) yoki ofisimizda rasmiylashtiramiz. Eng ko‘p so‘raladiganlari: ${gov.join(", ")}.`);
   if (d.delivery?.enabled) out.push(`Yetkazib berish: bor, ${d.delivery.paid ? `narxi ${fmtSum(d.delivery.price)} so‘m` : "bepul"}.`);
   if (d.nasiya?.enabled) out.push(`Muddatli to‘lov: bor (${d.nasiya.months} oy). Aniq shartlar ofisda.`);
   const offers = (d.offers || []).filter((o) => !o.hidden);
@@ -83,7 +83,8 @@ function compact({ content: d, products, numbers, news }, lang) {
     prods.forEach((p) => {
       const vars = (p.variants || []).filter((v) => v.status !== "out");
       const pr = vars.length ? vars.map((v) => `${[memL(v), v.color].filter(Boolean).join(" ") || "standart"}: ${fmtSum(v.price)}`).join("; ") : fmtSum(p.price);
-      out.push(`- [${cats[p.cat] || "boshqa"}] ${[p.brand, p.name].filter(Boolean).join(" ")} — ${pr}${p.status === "out" || (!vars.length && (p.variants || []).length) ? " (hozir yo‘q)" : ""}${p.specs ? ` | ${String(p.specs).replace(/\s*\n\s*/g, ", ").slice(0, 200)}` : ""}${p.warranty ? ` | kafolat ${p.warranty}` : ""}`);
+      const tars = Array.isArray(p.tariffs) && p.tariffs.length ? ` | tariflar: ${p.tariffs.filter((x) => x && x.name).map((x) => `${x.name}${num(x.price) ? " " + fmtSum(num(x.price)) + (x.period === "once" ? "" : x.period === "day" ? "/kun" : "/oy") : ""}${x.info ? " (" + x.info + ")" : ""}`).join("; ")}` : "";
+      out.push(`- [${cats[p.cat] || "boshqa"}] ${[p.brand, p.name].filter(Boolean).join(" ")} — ${pr}${tars}${p.status === "out" || (!vars.length && (p.variants || []).length) ? " (hozir yo‘q)" : ""}${p.specs ? ` | ${String(p.specs).replace(/\s*\n\s*/g, ", ").slice(0, 200)}` : ""}${p.warranty ? ` | kafolat ${p.warranty}` : ""}`);
     });
   }
   const nums = (numbers || []).filter((n) => !n.status || n.status === "free").slice(0, 40);
@@ -220,6 +221,15 @@ function fallbackAnswer({ content: d, products, numbers }, q, lang) {
       order = true;
     }
   }
+  if (has("wifi", "wi-fi", "router", "роутер", "modem", "модем", "uy interneti", "домашний интернет")) {
+    const rs = (products || []).filter((p) => !p.hidden && (p.cat === "routers" || (Array.isArray(p.tariffs) && p.tariffs.length))).slice(0, 5);
+    if (rs.length) {
+      out.push(ru ? "**Wi-Fi роутеры и тарифы:**" : "**Wi-Fi routerlar va tariflar:**");
+      rs.forEach((p) => { const v = (p.variants || [])[0] || {}; const tr = (p.tariffs || []).filter((x) => x && x.name).map((x) => `${x.name}${Number(x.price) ? " — " + fmtSum(x.price) + (ru ? " сум" : " so‘m") + (x.period === "once" ? "" : x.period === "day" ? (ru ? "/день" : "/kun") : (ru ? "/мес" : "/oy")) : ""}`).join("; "); out.push(`- ${[p.brand, p.name].filter(Boolean).join(" ")}${Number(v.price) ? ` — ${fmtSum(v.price)} ${ru ? "сум" : "so‘m"}` : ""}${tr ? `\n  📶 ${tr}` : ""}`); });
+      out.push(ru ? "Выберите в разделе «Магазин» — подключим и настроим." : "«Do‘kon» bo‘limida tanlang — ulab, sozlab beramiz.");
+      order = true;
+    }
+  }
   if (has("manzil", "qayer", "filial", "адрес", "где", "филиал", "lokatsiya", "joylash")) {
     const brs = (d.branches || []).filter((b) => !b.hidden);
     if (brs.length) out.push((ru ? "**Наши филиалы:**" : "**Filiallarimiz:**") + "\n" + brs.map((b) => `- ${L(b.name)}${L(b.addr) ? ": " + L(b.addr) : ""}`).join("\n"));
@@ -227,7 +237,7 @@ function fallbackAnswer({ content: d, products, numbers }, q, lang) {
   if (has("vaqt", "soat", "ochiq", "время", "работ", "часы", "dam olish")) out.push((ru ? "**Время работы:** " : "**Ish vaqti:** ") + hours);
   if (has("paynet", "to‘lov", "to'lov", "оплат", "kommunal", "коммунал")) out.push(ru ? "Оплату связи, интернета и коммунальных услуг через **Paynet** принимаем **в нашем офисе и во всех филиалах** — без очереди, чек сразу. Будем рады вас видеть!" : "**Paynet**, aloqa, internet va kommunal to‘lovlar **rasmiy ofisimiz va barcha filiallarimizda** qabul qilinadi — navbatsiz, chek darhol beriladi. Sizni kutib qolamiz!");
   if (has("avia", "bilet", "chipta", "билет", "рейс")) { out.push(ru ? "**Авиакасса:** поможем подобрать рейс и купить билет. Оставьте заявку — свяжемся." : "**Aviakassa:** reys tanlash va chipta olishda yordam beramiz. Ariza qoldiring — bog‘lanamiz."); order = true; }
-  if (has("davlat", "my.gov", "mygov", "госуслуг", "pasport", "паспорт", "spravka", "справк", "ma’lumotnoma")) { out.push(ru ? "**Госуслуги:** поможем подать онлайн-заявление и получить справки." : "**Davlat xizmatlari:** onlayn ariza topshirish va ma’lumotnomalar olishda yordam beramiz."); order = true; }
+  if (has("davlat", "yagona darcha", "единое окно", "my.gov", "mygov", "госуслуг", "pasport", "паспорт", "spravka", "справк", "ma’lumotnoma")) { out.push(ru ? "**Услуги «Единого окна»:** заявления, справки и другие госуслуги — оформим онлайн (удалённо) или в нашем офисе." : "**Yagona darcha xizmatlari:** arizalar, ma’lumotnomalar va boshqa davlat xizmatlari — onlayn (masofadan) yoki ofisimizda rasmiylashtiramiz."); order = true; }
   if (!out.length) {
     out.push(ru ? `Здравствуйте! Я помогу с SIM-картами, тарифами, телефонами, платежами и филиалами. Уточните вопрос или оставьте заявку — оператор перезвонит.` : `Assalomu alaykum! SIM kartalar, tariflar, telefonlar, to‘lovlar va filiallar bo‘yicha yordam beraman. Savolingizni aniqroq yozing yoki ariza qoldiring — operatorimiz qo‘ng‘iroq qiladi.`);
     order = true;
