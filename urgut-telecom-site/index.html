@@ -715,7 +715,7 @@ Object.assign(UI.uz,{
  monthly:"oyiga {s} so‘mdan",empty_cart:"Savatcha bo‘sh",checkout:"Buyurtma berish",subtotal:"Mahsulotlar",remove:"O‘chirish",
  nums_p:"Chiroyli va eslab qolish oson raqamlar. Tanlang va buyurtma bering.",no_items:"Hozircha mahsulot qo‘shilmagan.",no_nums:"Hozircha bo‘sh raqamlar yo‘q.",
  news_t:"Yangiliklar",news_p:"Urgut Telecom yangiliklari: yangi tariflar, aksiyalar va xizmatlar.",no_news:"Hozircha yangilik yo‘q.",more_r:"Batafsil",less_r:"Yopish",back:"Orqaga",
- sim_type:"SIM turi",sim_plain:"Oddiy SIM",esim:"eSIM",gov_q:"Qaysi davlat xizmati kerak?",gov_other:"Boshqa xizmat (o‘zim yozaman)",gov_write:"Xizmatni yozing",
+ sim_type:"SIM turi",sim_plain:"Oddiy SIM",esim:"eSIM",gov_q:"Qaysi Yagona darcha xizmati kerak?",gov_other:"Boshqa xizmat (o‘zim yozaman)",gov_write:"Xizmatni yozing",
  tr_from:"Qayerdan",tr_to:"Qayerga",tr_date:"Sana",how_get:"Qanday olasiz?",deliv:"Yetkazib berish",office:"Ofisga kelib olaman",remote:"Onlayn (masofadan)",remote_sm:"Operatorimiz qo‘ng‘iroq qilib, hammasini onlayn rasmiylashtiradi",how_do:"Qanday bajaramiz?",office_do:"Ofisimizda",tariff:"Tarif",tariff_pick:"Tarifni tanlang",per_m:"oyiga",per_d:"kuniga",per_1:"bir martalik",see_shop:"Tanlash va buyurtma berish",offl_t:"Ofisimizda kutib qolamiz!",offl_p:"Bu xizmat rasmiy ofisimiz va barcha filiallarimizda joyida, navbatsiz ko‘rsatiladi. Eng yaqin manzilni tanlang:",offl_call:"Savollar bo‘lsa, qo‘ng‘iroq qiling",
  free:"bepul",addr_f:"Manzilingiz",addr_ph:"Tuman, mahalla, ko‘cha, uy",loc_btn:"Joylashuvimni yuborish",loc_ok:"Joylashuv olindi ✓",loc_err:"Joylashuvni olib bo‘lmadi. Manzilni yozing.",
  promo:"Promokod",promo_apply:"Qo‘llash",promo_ok:"Chegirma: −{s} so‘m",promo_ok0:"Promokod qabul qilindi",promo_bad:"Promokod noto‘g‘ri yoki muddati o‘tgan",promo_min:"Bu promokod {s} so‘mdan katta buyurtmaga",
@@ -737,7 +737,7 @@ Object.assign(UI.ru,{
  monthly:"от {s} сум в месяц",empty_cart:"Корзина пуста",checkout:"Оформить заказ",subtotal:"Товары",remove:"Удалить",
  nums_p:"Красивые и легко запоминающиеся номера. Выберите и закажите.",no_items:"Товары пока не добавлены.",no_nums:"Свободных номеров пока нет.",
  news_t:"Новости",news_p:"Новости Urgut Telecom: новые тарифы, акции и услуги.",no_news:"Новостей пока нет.",more_r:"Подробнее",less_r:"Свернуть",back:"Назад",
- sim_type:"Тип SIM",sim_plain:"Обычная SIM",esim:"eSIM",gov_q:"Какая госуслуга нужна?",gov_other:"Другая услуга (напишу сам)",gov_write:"Напишите услугу",
+ sim_type:"Тип SIM",sim_plain:"Обычная SIM",esim:"eSIM",gov_q:"Какая услуга «Единого окна» нужна?",gov_other:"Другая услуга (напишу сам)",gov_write:"Напишите услугу",
  tr_from:"Откуда",tr_to:"Куда",tr_date:"Дата",how_get:"Как получить?",deliv:"Доставка",office:"Заберу в офисе",remote:"Онлайн (удалённо)",remote_sm:"Оператор позвонит и оформит всё онлайн",how_do:"Как оформим?",office_do:"В нашем офисе",tariff:"Тариф",tariff_pick:"Выберите тариф",per_m:"в месяц",per_d:"в день",per_1:"разово",see_shop:"Выбрать и заказать",offl_t:"Ждём вас в офисе!",offl_p:"Эта услуга оказывается на месте в нашем офисе и во всех филиалах — без очереди. Выберите ближайший адрес:",offl_call:"Есть вопросы — позвоните",
  free:"бесплатно",addr_f:"Ваш адрес",addr_ph:"Район, махалля, улица, дом",loc_btn:"Отправить мою геолокацию",loc_ok:"Геолокация получена ✓",loc_err:"Не удалось получить геолокацию. Напишите адрес.",
  promo:"Промокод",promo_apply:"Применить",promo_ok:"Скидка: −{s} сум",promo_ok0:"Промокод принят",promo_bad:"Промокод неверный или истёк",promo_min:"Этот промокод для заказа от {s} сум",
@@ -1993,7 +1993,7 @@ const L2=o=>esc((o&&(o[el]||o.uz))||"");
 const DAYS=[["all","Har kuni"],["monsat","Dushanba–shanba"],["monfri","Dushanba–juma"]];
 const VIS=[["sims","SIM kartalar (3D)"],["pay","Bank karta, chek va tangalar (3D)"],["travel","Samolyot, chipta va sug‘urta (3D)"],["phone","Telefon va aksessuarlar (3D)"]];
 const ICS=[["sim","SIM karta"],["pay","To‘lov"],["car","Avtomobil"],["plane","Samolyot"],["phone","Telefon"],["acc","Quloqchin"],["gov","Davlat binosi"],["wifi","Wi-Fi router"]];
-const KINDS=[["sim","SIM karta (operator, oddiy SIM / eSIM)"],["gov","Davlat xizmati (ro‘yxatdan tanlash)"],["travel","Aviachipta (qayerdan, qayerga, sana)"],["pay","To‘lov"],["other","Oddiy ariza"]];
+const KINDS=[["sim","SIM karta (operator, oddiy SIM / eSIM)"],["gov","Yagona darcha xizmati (ro‘yxatdan tanlash)"],["travel","Aviachipta (qayerdan, qayerga, sana)"],["pay","To‘lov"],["other","Oddiy ariza"]];
 const MODELS=["gemini-3-flash-preview","gemini-3.1-flash-lite","gemini-3.1-pro-preview"];
 const MINONE=["slides","services","operators"];
 function socPrev(s){const u=socUrl(s.type,s.url);return u?"Saytdagi havola: "+u:"Bo‘sh qolsa saytda ko‘rinmaydi"}
