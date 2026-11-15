@@ -6,7 +6,21 @@ const str = (v, max = 200) => String(v ?? "").replace(/[\u0000-\u001f\u007f]/g, 
 const rid = () => randomId(20);
 const code6 = () => randomId(6, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789");
 
+// Urgut Telecom mobil ilovasi boshqa manzildan yuboradi — faqat shu manzillarga ruxsat (CORS)
+const APP_ORIGINS = new Set(["https://urgut-ussd.netlify.app", "https://appassets.androidplatform.net"]);
+
 export default async (req, context) => {
+  const origin = req.headers.get("origin") || "";
+  if (!APP_ORIGINS.has(origin)) return handle(req, context);
+  const cors = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400", Vary: "Origin" };
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  const res = await handle(req, context);
+  const out = new Response(res.body, res);
+  for (const [k, v] of Object.entries(cors)) out.headers.set(k, v);
+  return out;
+};
+
+async function handle(req, context) {
   if (req.method !== "POST") return json({ error: "method" }, 405);
   if (!ready()) return json({ error: "Server sozlanmagan (FIREBASE_SERVICE_ACCOUNT)", code: "setup" }, 503);
   const isBot = botKeyOk(req);
@@ -28,7 +42,7 @@ export default async (req, context) => {
   const kind = ["service", "shop", "number"].includes(b.kind) ? b.kind : "service";
   const r = {
     kind, name, phone: "+" + phone, lang, status: "new",
-    src: isBot ? "bot" : ["site", "ai", "offer"].includes(b.src) ? b.src : "site",
+    src: isBot ? "bot" : ["site", "ai", "offer", "app"].includes(b.src) ? b.src : "site",
     note: str(b.note, 600), details: {}, items: [], subtotal: 0, deliveryFee: 0, discount: 0, total: 0,
   };
   if (isBot && b.tgId && /^\d{4,15}$/.test(String(b.tgId))) { r.tgId = String(b.tgId); if (b.tgUser) r.tgUser = String(b.tgUser).replace(/[^\w]/g, "").slice(0, 40); }
@@ -131,7 +145,7 @@ export default async (req, context) => {
   if (r.numId) patchDoc(`numbers/${r.numId}`, { status: "reserved" }).catch(() => {});
 
   // Telegram xabari
-  const srcTxt = { ai: "UrgutTelecom AI orqali", offer: "Takliflardan", bot: "Bot orqali" }[r.src] || "Saytdan";
+  const srcTxt = { ai: "UrgutTelecom AI orqali", offer: "Takliflardan", bot: "Bot orqali", app: "Mobil ilovadan" }[r.src] || "Saytdan";
   const lines = [
     `🆕 <b>${kind === "shop" ? "Yangi buyurtma" : "Yangi ariza"}</b> #${r.code}`,
     `👤 ${h(r.name)}  📞 ${h(r.phone)}`,
@@ -143,7 +157,7 @@ export default async (req, context) => {
     r.total ? `💰 Jami: <b>${fmtSum(r.total)} so‘m</b>${r.deliveryFee ? ` (yetkazish ${fmtSum(r.deliveryFee)})` : ""}` : "",
     r.pay === "nasiya" ? `📆 Muddatli to‘lov: ${r.nasiya.months} oy × ${fmtSum(r.nasiya.monthly)} so‘m` : "",
     r.note ? `💬 ${h(r.note)}` : "",
-    `🌐 ${srcTxt}${lang === "ru" ? " · RU" : ""}${r.afterHours ? " · ish vaqtidan tashqari" : ""}`,
+    `${r.src === "app" ? "📱" : "🌐"} ${srcTxt}${lang === "ru" ? " · RU" : ""}${r.afterHours ? " · ish vaqtidan tashqari" : ""}`,
   ].filter(Boolean);
   const btn = (t, s) => ({ text: t, callback_data: `rq:${id}:${s}` });
   const buttons = [[btn("✅ Qabul qildim", "work"), ...(r.fulfil === "delivery" ? [btn("🚚 Yo‘lda", "onway")] : [])], [btn("✔️ Bajarildi", "done"), btn("❌ Bekor", "cancel")]];

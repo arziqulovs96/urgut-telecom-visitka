@@ -1839,7 +1839,7 @@ const newCount=()=>REQ.filter(r=>(r.status||"new")==="new").length;
 function badge(){const b=cms.querySelector('[data-pg="requests"] .pill');const n=newCount();if(b){b.textContent=n;b.hidden=!n}}
 function rqItem(r){
  const st=r.status||"new",det=r.details||{},DL={simType:"SIM turi",gov:"Davlat xizmati",from:"Qayerdan",to:"Qayerga",date:"Sana"};
- const src={ai:"AI orqali",offer:"Takliflardan",bot:"Bot orqali"}[r.src]||"Saytdan";
+ const src={ai:"AI orqali",offer:"Takliflardan",bot:"Bot orqali",app:"Mobil ilovadan"}[r.src]||"Saytdan";
  return `<div class="rqi"><div class="top"><b>${esc(r.name)}</b><span class="pill ${esc(st)}">${(RQS.find(x=>x[0]===st)||RQS[0])[1]}</span><span class="pill">#${esc(r.code||r.id.slice(0,6).toUpperCase())}</span>${r.kind==="shop"?`<span class="pill work">Do‘kon</span>`:r.kind==="number"?`<span class="pill work">Raqam</span>`:""}</div>
   <div class="meta"><a href="${tel(r.phone)}">${esc(r.phone)}</a><span>${esc(r.service||"")}${r.op?` · ${esc(r.op)}`:""}</span><span>${fmtT(r.createdAt)}</span><span>${src}${r.lang==="ru"?" · RU":""}${r.afterHours?" · ish vaqtidan tashqari":""}</span></div>
   ${Object.entries(det).filter(([,v])=>v).map(([k,v])=>`<div class="meta"><span>${DL[k]||k}: <b style="color:var(--ink)">${esc(v)}</b></span></div>`).join("")}
