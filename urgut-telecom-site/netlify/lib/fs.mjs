@@ -201,12 +201,21 @@ export const h = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;"
 export async function tgSend(text, { chats, buttons } = {}) {
   const token = env("TG_BOT_TOKEN");
   const ids = chats || env("TG_CHAT_ID").split(/[,\s]+/).filter(Boolean);
-  if (!token || !ids.length) return false;
+  if (!token || !ids.length) {
+    console.error(`[tgSend] Telegram xabari yuborilmadi: ${!token ? "TG_BOT_TOKEN yo'q" : "qabul qiluvchi yo'q (TG_CHAT_ID bo'sh va bot adminlari topilmadi)"}`);
+    return false;
+  }
   const body = (chat_id) => ({ chat_id, text, parse_mode: "HTML", disable_web_page_preview: true, ...(buttons ? { reply_markup: { inline_keyboard: buttons } } : {}) });
-  await Promise.all(ids.map((id) =>
-    fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(id)) }).catch(() => null)
-  ));
-  return true;
+  const res = await Promise.all(ids.map(async (id) => {
+    try {
+      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(id)) });
+      if (r.ok) return true;
+      const j = await r.json().catch(() => ({}));
+      console.error(`[tgSend] chat ${id}: ${r.status} ${j.description || ""}`);
+    } catch (e) { console.error(`[tgSend] chat ${id}: tarmoq xatosi ${e?.message || e}`); }
+    return false;
+  }));
+  return res.some(Boolean);
 }
 
 /* ---------------- Bot bilan bog‘lanish ---------------- */
