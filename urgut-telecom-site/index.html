@@ -1548,12 +1548,13 @@ function subtotal(){
  if(O.kind==="shop"&&O.prods)return O.items.reduce((s,x)=>{const p=O.prods.find(q=>q.id===x.pid);if(!p)return s;const v=pVars(p)[x.v]||pVars(p)[0];return s+(+v.price||0)*x.qty},0);
  if(O.kind==="number"&&O.num)return +O.num.price||0;return 0}
 function readOrder(){const f=$("ofm");if(!f)return;for(const el of f.elements){if(!el.name)continue;if(el.type==="radio"){if(el.checked)O[el.name]=el.value}else O[el.name]=el.value}if(O.kind==="service")O.svc=+O.svc}
+const dlFee=()=>{const v=+String(S.delivery?.price||"").replace(/\D/g,"");return S.delivery?.paid&&v>0?v:10000};
 function drawOrder(){
  if(MODE!=="order")return;
  const svc=O.kind==="service"?S.services[O.svc]:null,sk=svc?svc.kind||"other":"";
  const dl=delivOK(),rm=O.kind==="service"&&!!(svc&&svc.remote);
  if(!dl&&O.fulfil==="delivery")O.fulfil="office";if(!rm&&O.fulfil==="online")O.fulfil="office";
- const brs=visBranches(),sub=subtotal(),fee=O.fulfil==="delivery"&&S.delivery.paid?+String(S.delivery.price).replace(/\D/g,"")||0:0;
+ const brs=visBranches(),sub=subtotal(),fee=O.fulfil==="delivery"?dlFee():0;
  const disc=O.promoRes&&O.promoRes.ok?Math.min(sub,O.promoRes.type==="sum"?O.promoRes.value:Math.round(sub*O.promoRes.value/100)):0;
  const total=Math.max(0,sub-disc)+fee,priced=O.kind!=="service";
  const op=opById(O.op);
@@ -1584,7 +1585,7 @@ function drawOrder(){
   if(!O.num||O.num.status&&O.num.status!=="free"){openModal(`${XBTN()}<h3>${t("req_t")}</h3><p class="sub">${t("no_nums")}</p>`);return}
   const no=opById(O.num.op);h+=`<div class="fixed" style="--c:${esc(no?no.color:"#1A2C6E")}"><i></i>${esc(O.num.num)}${no?` · ${esc(no.name)}`:""}</div>`;
  }
- const fo=[...(dl?[["delivery",t("deliv"),S.delivery.paid?`${som(String(S.delivery.price).replace(/\D/g,""))} ${t("sum")}`:t("free")]]:[]),...(rm?[["online",t("remote"),t("remote_sm")]]:[]),["office",rm&&!dl?t("office_do"):t("office")]];
+ const fo=[...(dl?[["delivery",t("deliv"),`${som(dlFee())} ${t("sum")}`]]:[]),...(rm?[["online",t("remote"),t("remote_sm")]]:[]),["office",rm&&!dl?t("office_do"):t("office")]];
  if(fo.length>1)h+=`<div><span style="font-weight:600;font-size:14px">${rm&&!dl?t("how_do"):t("how_get")}</span>${r2("fulfil",fo)}</div>`;
  if(O.fulfil==="delivery"){
   if(showAddr)h+=`<label>${t("addr_f")}<textarea name="address" maxlength="300" placeholder="${t("addr_ph")}" style="min-height:70px">${esc(O.address)}</textarea></label>`;

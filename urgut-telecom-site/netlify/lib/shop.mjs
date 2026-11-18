@@ -26,10 +26,14 @@ export async function checkPromo(content, code, scope, subtotal) {
   return { ok: true, code, type: p.type === "sum" ? "sum" : "percent", value, discount };
 }
 
+export const DELIVERY_FEE = 10000;
+
 export function deliveryFor(content, kind, svc) {
   const d = content?.delivery || {};
   const allowed = !!d.enabled && (kind !== "service" || !!svc?.delivery);
-  return { allowed, fee: allowed && d.paid ? num(d.price) : 0, paid: !!d.paid };
+  // Yetkazib berish narxi: admin panelda boshqa narx kiritilmagan bo'lsa 10 000 so'm
+  const fee = allowed ? (d.paid && num(d.price) > 0 ? num(d.price) : DELIVERY_FEE) : 0;
+  return { allowed, fee, paid: fee > 0 };
 }
 
 export function nasiyaPlan(content, total, months) {
