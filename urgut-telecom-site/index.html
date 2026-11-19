@@ -38,21 +38,6 @@ h1,h2,h3{margin:0;line-height:1.08;text-wrap:balance;letter-spacing:-.025em}
 .lead{color:var(--muted);font-size:18px;max-width:50ch;margin:16px 0 0}
 
 
-/* Operatorlar tariflari */
-.tfs{background:var(--porcelain);padding-block:100px}
-.tf-ops{margin:32px 0 14px}.tf-ops button i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px}
-.tf-secs{margin-bottom:22px}.tf-secs button{background:var(--paper)}
-.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.tf{background:var(--paper);border-radius:16px;padding:18px;box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column;gap:8px;min-width:0}
-.tf-h{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.tf-h b{font-size:18px;line-height:1.25}
-.tf-new{flex:none;font:700 12px var(--font);background:var(--turq-l);color:#0E6F66;padding:3px 9px;border-radius:999px}
-.tf p{margin:0;color:var(--muted);font-size:15px;line-height:1.45}
-.tf-f{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:6px}
-.tf-p{font-weight:800;font-size:22px;color:var(--lapis-900);white-space:nowrap}.tf-p small{font-size:13px;font-weight:600;color:var(--muted)}
-.tf-c{font:700 14px var(--font);color:var(--lapis-700);text-decoration:none;background:var(--porcelain);padding:5px 10px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line)}
-.tf.arch{opacity:.85}.tf-a{font-size:13px;color:#8A5A00;background:#FFF4DE;border-radius:8px;padding:4px 9px;align-self:flex-start}
-@media (max-width:600px){.tfs{padding-block:64px}.tf-grid{grid-template-columns:minmax(0,1fr)}}
-
 /* Tactile buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:14px;padding:15px 24px;font:700 16px/1 var(--font);cursor:pointer;text-decoration:none;transition:transform .12s,box-shadow .12s}
 .btn-gold{color:#2A1B02;background:linear-gradient(180deg,#F0C878,#CF9638);
@@ -907,7 +892,7 @@ const liveSocials=()=>S.socials.map(s=>({...s,href:socUrl(s.type,s.url)})).filte
 /* =================== Sahifa tuzilishi =================== */
 const SHELL=`<header><div class="wrap hdr">
   <a class="logo" href="#top" id="logoTop"></a>
-  <nav><a href="#services" data-i="n1"></a><a href="#tariffs" data-i="n8" data-nav="tariffs"></a><a href="#shop" data-i="n6" data-nav="shop"></a><a href="#news" data-i="n7" data-nav="news"></a><a href="#company" data-i="n2"></a><a href="#branches" data-i="n3"></a><a href="#contacts" data-i="n4"></a></nav>
+  <nav><a href="#services" data-i="n1"></a><a href="#shop" data-i="n6" data-nav="shop"></a><a href="#news" data-i="n7" data-nav="news"></a><a href="#company" data-i="n2"></a><a href="#branches" data-i="n3"></a><a href="#contacts" data-i="n4"></a></nav>
   <button class="cartb" id="cartB" type="button" hidden aria-label="Savatcha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><b id="cartN">0</b></button>
   <div class="lang" role="group" aria-label="Til"><button data-l="uz">UZ</button><button data-l="ru">RU</button></div>
   <a class="btn btn-gold" href="#contacts"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg><span data-i="cta"></span></a>
@@ -939,10 +924,6 @@ const SHELL=`<header><div class="wrap hdr">
     <div class="tiles" id="tiles"></div>
   </div></section>
 
-  <section class="tfs" id="tariffs" hidden><div class="wrap">
-    <h2 class="h2" data-i="tf_t"></h2><p class="lead" data-i="tf_p"></p>
-    <div id="tfBox"></div>
-  </div></section>
 
   <section class="co" id="company"><div class="wrap co-grid">
     <div class="co-txt"><h2 class="h2" id="aTitle"></h2><p id="aText"></p><div class="facts" id="facts"></div></div>
@@ -1304,27 +1285,6 @@ function renderOffers(){
    <div class="of-pr ${o.price?"":"ask"}">${o.price?esc(o.price):t("ask")}</div><button class="btn btn-lapis" type="button" data-order="offer|${i}">${t("order")}</button></div></article>`}).join("")}
 $("ofChips").addEventListener("click",e=>{const b=e.target.closest("[data-of]");if(!b)return;ofOp=b.dataset.of;renderOffers()});
 
-/* ---- Operatorlar tariflari (AI katalog) ---- */
-let CATD=null,TF={op:"",sec:"tariffs"};const TF_MAP={uzmobile:"uztelecom"};
-async function loadTf(){try{const r=await fetch("/api/catalog");CATD=(await r.json()).ops||{}}catch(e){CATD={}}renderTariffs()}
-function renderTariffs(){
- const box=$("tfBox"),sec=$("tariffs");if(!box)return;
- if(!CATD){box.innerHTML=`<p class="lead">${t("tf_load")}</p>`;if(!loadTf.on){loadTf.on=1;loadTf()}return}
- const list=ops().map(o=>({o,id:TF_MAP[o.id]||o.id})).filter(x=>CATD[x.id]);
- sec.hidden=!list.length;document.querySelectorAll('[data-nav="tariffs"]').forEach(a=>a.hidden=!list.length);if(!list.length)return;
- if(!list.some(x=>x.id===TF.op))TF.op=list[0].id;
- const d=CATD[TF.op],secs=[["tariffs","tf_tar"],["internet","tf_int"],["minutes","tf_min"],["archive","tf_arc"]].filter(([k])=>(d[k]||[]).length);
- if(!secs.some(([k])=>k===TF.sec))TF.sec=(secs[0]||["tariffs"])[0];
- const arch=TF.sec==="archive",fresh=x=>x.since&&Date.now()-Date.parse(x.since)<30*864e5;
- const card=x=>`<div class="tf${arch?" arch":""}"><div class="tf-h"><b>${esc(x.n)}</b>${!arch&&fresh(x)?`<span class="tf-new">${t("tf_new")}</span>`:""}</div>${L(x.d)?`<p>${esc(L(x.d))}</p>`:""}
-  ${arch?`<span class="tf-a">${x.why==="price"?`${t("tf_price")} ${som(x.newP)} ${t("tf_sum")}`:t("tf_closed")} · ${t("tf_since")} ${esc(x.from||"")}</span>`:""}
-  <div class="tf-f"><span class="tf-p">${som(x.p)} <small>${t("tf_sum")}${(x.sec||TF.sec)==="tariffs"?" / "+t("tf_mo"):""}</small></span>${x.c&&!arch?`<a class="tf-c" href="tel:${esc(x.c.replace(/#/g,"%23"))}" title="${t("tf_code")}">${esc(x.c)}</a>`:""}</div></div>`;
- box.innerHTML=`<div class="chips tf-ops" role="group">${list.map(x=>`<button type="button" data-tfop="${esc(x.id)}" aria-pressed="${x.id===TF.op}"><i style="background:${esc(x.o.color)}"></i>${esc(x.o.name)}</button>`).join("")}</div>
-  <div class="chips tf-secs" role="group">${secs.map(([k,l])=>`<button type="button" data-tfsec="${k}" aria-pressed="${k===TF.sec}">${t(l)} · ${(d[k]||[]).length}</button>`).join("")}</div>
-  <div class="tf-grid">${(arch?d.archive:d[TF.sec]||[]).map(card).join("")}</div>`;
-}
-document.addEventListener("click",e=>{const a=e.target.closest("[data-tfop],[data-tfsec]");if(!a)return;if(a.dataset.tfop)TF.op=a.dataset.tfop;if(a.dataset.tfsec)TF.sec=a.dataset.tfsec;renderTariffs()});
-
 function render(){
  document.documentElement.lang=lang;
  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
@@ -1338,7 +1298,7 @@ function render(){
  const tBtn=(s,i)=>`<button class="btn btn-lapis go" type="button" ${tAct(s,i)}>${s.cat&&tAct(s,i).startsWith("data-shopcat")?t("see_shop"):t("order")}${GO}</button>`;
  $("tiles").innerHTML=S.services.filter(s=>!s.hidden).map(s=>[s,S.services.indexOf(s)]).map(([s,i])=>`<div class="tile on" ${tAct(s,i)}><div class="badge">${ico(s.icon)}</div><div class="tb"><h3>${esc(L(s.title))}</h3><p>${esc(L(s.text))}</p>${s.online||s.cat?"":`<div class="offl"><span>🏢 ${t("offline")}</span></div>`}${tBtn(s,i)}</div></div>`).join("");
  $("fSvc").innerHTML=S.services.filter(s=>!s.hidden).map(s=>[s,S.services.indexOf(s)]).map(([s,i])=>`<li><button type="button" class="flink" ${tAct(s,i)}>${esc(L(s.title))}</button></li>`).join("");
- renderOffers();renderTariffs();
+ renderOffers();
  $("aTitle").textContent=L(S.about.title);$("aText").textContent=L(S.about.text);
  $("facts").innerHTML=[[ops().length,"f1"],[S.services.length,"f2"],[visBranches().length,"f3"]].map(([n,k])=>`<div class="fact"><b>${n}</b><span>${t(k)}</span></div>`).join("")+`<div class="fact"><b>${S.hours.open}–${S.hours.close}</b><span>${t("days")[S.hours.days]}</span></div>`;
  const f=S.founder,ini=f.name.trim().split(/\s+/).map(w=>w[0]||"").join("").slice(0,2).toUpperCase();
