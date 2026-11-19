@@ -6,6 +6,13 @@
 [functions]
   node_bundler = "esbuild"
 
+# Mobil ilovani yuklab olish havolasi: urguttelecom.uz/ilova
+[[redirects]]
+  from = "/ilova"
+  to = "https://urgut-ussd.netlify.app/dl/urgut-telecom.apk"
+  status = 302
+  force = true
+
 # Server kodi va yo‘riqnomalar saytda ochiq ko‘rinmasin
 [[redirects]]
   from = "/netlify/*"
