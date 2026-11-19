@@ -7,6 +7,7 @@ import {
 import { generate, extractText, functionCalls, searchedOf, currentModel } from "../lib/gemini.mjs";
 import { requestsSince, summarize, dayStart, STATUS } from "../lib/stats.mjs";
 import { runNews } from "../lib/news.mjs";
+import { refresh as catalogRefresh, decide as catalogDecide, restore as catalogRestore, archiveItem as catalogArchive, OPS as CAT_OPS, SEC_UZ } from "../lib/catalog.mjs";
 // Chiroyli raqam: ariza bekor qilinsa yana sotuvga chiqadi, bajarilsa — sotilgan
 const numStatus = (st) => (st === "cancel" ? "free" : st === "done" ? "sold" : "reserved");
 import { buildReport } from "../lib/report.mjs";
@@ -36,6 +37,10 @@ const WRITE = {
   delete_promo: fn("delete_promo", "Promokodni o‘chirish.", { code: S("Promokod") }, ["code"]),
   save_number: fn("save_number", "Chiroyli raqam qo‘shish yoki tahrirlash. data JSON: {num:\"99 777 77 77\", op, price, tier, status(free|reserved|sold)}.", { id: S("Mavjud ID (yangi bo‘lsa bo‘sh)"), data: S("JSON") }, ["data"]),
   delete_number: fn("delete_number", "Chiroyli raqamni o‘chirish.", { id: S("ID") }, ["id"]),
+  catalog_check: fn("catalog_check", "AI operatorning amaldagi tariflari/paketlarini rasmiy saytdan hozir tekshirsin (yangisini qo‘shadi, eskisini arxivga).", { operator: S("ucell|uztelecom|mobiuz|beeline"), section: S("tariffs|internet|minutes") }, ["operator", "section"]),
+  catalog_decide: fn("catalog_decide", "AI tayyorlagan tarif o‘zgarishini tasdiqlash yoki rad etish.", { operator: S("Operator ID"), section: S("tariffs|internet|minutes"), approve: S("ha yoki yo‘q") }, ["operator", "section", "approve"]),
+  catalog_restore: fn("catalog_restore", "Arxivdagi tarifni qaytarish.", { operator: S("Operator ID"), index: N("Arxivdagi tartib raqami (0 dan)") }, ["operator", "index"]),
+  catalog_archive: fn("catalog_archive", "Amaldagi tarif/paketni qo‘lda arxivga o‘tkazish.", { operator: S("Operator ID"), section: S("tariffs|internet|minutes"), index: N("Ro‘yxatdagi tartib raqami (0 dan)") }, ["operator", "section", "index"]),
   fetch_news_now: fn("fetch_news_now", "AI hozir operatorlarning rasmiy saytlaridan yangiliklar qidirsin.", { operator: S("Operator ID (bo‘sh = hammasi)") }),
   send_report_now: fn("send_report_now", "Kechagi kun hisobotini hozir Telegram’ga yuborish."),
   set_requests_status: fn("set_requests_status", "Bir nechta arizaning holatini birdaniga o‘zgartirish (masalan, hamma yangi arizalarni qabul qilish: from=new, to=work). Mijozga holat haqida bot orqali avtomatik xabar boradi.", { from: S("Qaysi holatdagilar: new|work|onway|done|cancel|all"), to: S("Yangi holat: work|onway|done|cancel"), codes: S("Faqat shu kodlar, vergul bilan (ixtiyoriy)"), days: N("Oxirgi necha kun (ixtiyoriy, standart 60)") }, ["from", "to"]),
@@ -166,6 +171,10 @@ async function describe(name, a) {
     case "delete_promo": return `Promokod o‘chiriladi: ${cleanCode(a.code)}`;
     case "save_number": return `${a.id ? "Raqam tahrirlanadi" : "Chiroyli raqam qo‘shiladi"}: ${d?.num || a.id}${d?.price ? ` — ${fmtSum(d.price)} so‘m` : ""}`;
     case "delete_number": return `Raqam o‘chiriladi: ${a.id}`;
+    case "catalog_check": return `AI ${(CAT_OPS.find((o) => o.id === a.operator) || {}).name || a.operator} — ${SEC_UZ[a.section] || a.section} ni rasmiy saytdan tekshiradi`;
+    case "catalog_decide": return `Tarif o‘zgarishi ${/^y|^n|rad/i.test(String(a.approve)) ? "rad etiladi" : "tasdiqlanadi"}: ${a.operator} · ${SEC_UZ[a.section] || a.section}`;
+    case "catalog_restore": return `Arxivdagi tarif qaytariladi (${a.operator}, №${a.index})`;
+    case "catalog_archive": return `Tarif arxivga o‘tkaziladi (${a.operator}, ${SEC_UZ[a.section] || a.section}, №${a.index})`;
     case "fetch_news_now": return `AI hozir ${a.operator || "barcha operatorlar"} bo‘yicha yangilik qidiradi`;
     case "send_report_now": return "Kechagi hisobot hozir Telegram’ga yuboriladi";
   }
@@ -258,6 +267,15 @@ async function runWrite(name, a, who) {
       return `Raqam saqlandi (ID ${id})`;
     }
     case "delete_number": await deleteDoc(`numbers/${a.id}`); return "O‘chirildi";
+    case "catalog_check": {
+      const c = await siteContent(0);
+      const r = await catalogRefresh(c, String(a.operator), String(a.section), { publish: c?.catalogCfg?.autoPublish !== false });
+      if (!r.ok) throw new Error(r.msg);
+      return r.msg;
+    }
+    case "catalog_decide": return await catalogDecide(String(a.operator), String(a.section), !/^y|^n|rad|no/i.test(String(a.approve)));
+    case "catalog_restore": return await catalogRestore(String(a.operator), Number(a.index));
+    case "catalog_archive": return await catalogArchive(String(a.operator), String(a.section), Number(a.index));
     case "fetch_news_now": {
       const r = await runNews(await siteContent(0), { opIds: a.operator ? [a.operator] : undefined });
       if (r.length && r.every((x) => x.error) && new Set(r.map((x) => x.error)).size === 1) throw new Error(r[0].error);

@@ -37,6 +37,22 @@ h1,h2,h3{margin:0;line-height:1.08;text-wrap:balance;letter-spacing:-.025em}
 .h2{font-size:clamp(30px,3.6vw,46px);font-weight:800}
 .lead{color:var(--muted);font-size:18px;max-width:50ch;margin:16px 0 0}
 
+
+/* Operatorlar tariflari */
+.tfs{background:var(--porcelain);padding-block:100px}
+.tf-ops{margin:32px 0 14px}.tf-ops button i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px}
+.tf-secs{margin-bottom:22px}.tf-secs button{background:var(--paper)}
+.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.tf{background:var(--paper);border-radius:16px;padding:18px;box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column;gap:8px;min-width:0}
+.tf-h{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.tf-h b{font-size:18px;line-height:1.25}
+.tf-new{flex:none;font:700 12px var(--font);background:var(--turq-l);color:#0E6F66;padding:3px 9px;border-radius:999px}
+.tf p{margin:0;color:var(--muted);font-size:15px;line-height:1.45}
+.tf-f{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:6px}
+.tf-p{font-weight:800;font-size:22px;color:var(--lapis-900);white-space:nowrap}.tf-p small{font-size:13px;font-weight:600;color:var(--muted)}
+.tf-c{font:700 14px var(--font);color:var(--lapis-700);text-decoration:none;background:var(--porcelain);padding:5px 10px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line)}
+.tf.arch{opacity:.85}.tf-a{font-size:13px;color:#8A5A00;background:#FFF4DE;border-radius:8px;padding:4px 9px;align-self:flex-start}
+@media (max-width:600px){.tfs{padding-block:64px}.tf-grid{grid-template-columns:minmax(0,1fr)}}
+
 /* Tactile buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:14px;padding:15px 24px;font:700 16px/1 var(--font);cursor:pointer;text-decoration:none;transition:transform .12s,box-shadow .12s}
 .btn-gold{color:#2A1B02;background:linear-gradient(180deg,#F0C878,#CF9638);
@@ -714,7 +730,7 @@ Object.assign(UI.uz,{
  add_cart:"Savatchaga",buy_now:"Hozir buyurtma",added:"Savatchaga qo‘shildi",warranty:"Kafolat",specs:"Xususiyatlari",
  monthly:"oyiga {s} so‘mdan",empty_cart:"Savatcha bo‘sh",checkout:"Buyurtma berish",subtotal:"Mahsulotlar",remove:"O‘chirish",
  nums_p:"Chiroyli va eslab qolish oson raqamlar. Tanlang va buyurtma bering.",no_items:"Hozircha mahsulot qo‘shilmagan.",no_nums:"Hozircha bo‘sh raqamlar yo‘q.",
- news_t:"Yangiliklar",news_p:"Urgut Telecom yangiliklari: yangi tariflar, aksiyalar va xizmatlar.",no_news:"Hozircha yangilik yo‘q.",more_r:"Batafsil",less_r:"Yopish",back:"Orqaga",
+ news_t:"Yangiliklar",tf_t:"Operatorlar tariflari",tf_p:"Ucell, Uztelecom, Mobiuz va Beeline’ning amaldagi tariflari va paketlari — operatorlarning rasmiy saytlari asosida. Eski tariflar arxivda saqlanadi.",tf_tar:"Tariflar",tf_int:"Internet",tf_min:"Daqiqa va SMS",tf_arc:"Arxiv",tf_new:"Yangi",tf_sum:"so‘m",tf_mo:"oyiga",tf_price:"narxi o‘zgardi →",tf_closed:"sotuvdan chiqqan",tf_since:"arxivda:",tf_code:"Ulash kodi",tf_load:"Yuklanmoqda…",n8:"Tariflar",news_p:"Urgut Telecom yangiliklari: yangi tariflar, aksiyalar va xizmatlar.",no_news:"Hozircha yangilik yo‘q.",more_r:"Batafsil",less_r:"Yopish",back:"Orqaga",
  sim_type:"SIM turi",sim_plain:"Oddiy SIM",esim:"eSIM",gov_q:"Qaysi Yagona darcha xizmati kerak?",gov_other:"Boshqa xizmat (o‘zim yozaman)",gov_write:"Xizmatni yozing",
  tr_from:"Qayerdan",tr_to:"Qayerga",tr_date:"Sana",how_get:"Qanday olasiz?",deliv:"Yetkazib berish",office:"Ofisga kelib olaman",remote:"Onlayn (masofadan)",remote_sm:"Operatorimiz qo‘ng‘iroq qilib, hammasini onlayn rasmiylashtiradi",how_do:"Qanday bajaramiz?",office_do:"Ofisimizda",tariff:"Tarif",tariff_pick:"Tarifni tanlang",per_m:"oyiga",per_d:"kuniga",per_1:"bir martalik",see_shop:"Tanlash va buyurtma berish",offl_t:"Ofisimizda kutib qolamiz!",offl_p:"Bu xizmat rasmiy ofisimiz va barcha filiallarimizda joyida, navbatsiz ko‘rsatiladi. Eng yaqin manzilni tanlang:",offl_call:"Savollar bo‘lsa, qo‘ng‘iroq qiling",
  free:"bepul",addr_f:"Manzilingiz",addr_ph:"Tuman, mahalla, ko‘cha, uy",loc_btn:"Joylashuvimni yuborish",loc_ok:"Joylashuv olindi ✓",loc_err:"Joylashuvni olib bo‘lmadi. Manzilni yozing.",
@@ -736,7 +752,7 @@ Object.assign(UI.ru,{
  add_cart:"В корзину",buy_now:"Заказать сейчас",added:"Добавлено в корзину",warranty:"Гарантия",specs:"Характеристики",
  monthly:"от {s} сум в месяц",empty_cart:"Корзина пуста",checkout:"Оформить заказ",subtotal:"Товары",remove:"Удалить",
  nums_p:"Красивые и легко запоминающиеся номера. Выберите и закажите.",no_items:"Товары пока не добавлены.",no_nums:"Свободных номеров пока нет.",
- news_t:"Новости",news_p:"Новости Urgut Telecom: новые тарифы, акции и услуги.",no_news:"Новостей пока нет.",more_r:"Подробнее",less_r:"Свернуть",back:"Назад",
+ news_t:"Новости",tf_t:"Тарифы операторов",tf_p:"Действующие тарифы и пакеты Ucell, Uztelecom, Mobiuz и Beeline — по данным официальных сайтов операторов. Старые тарифы хранятся в архиве.",tf_tar:"Тарифы",tf_int:"Интернет",tf_min:"Минуты и SMS",tf_arc:"Архив",tf_new:"Новое",tf_sum:"сум",tf_mo:"в месяц",tf_price:"цена изменена →",tf_closed:"снят с продажи",tf_since:"в архиве с",tf_code:"Код подключения",tf_load:"Загрузка…",n8:"Тарифы",news_p:"Новости Urgut Telecom: новые тарифы, акции и услуги.",no_news:"Новостей пока нет.",more_r:"Подробнее",less_r:"Свернуть",back:"Назад",
  sim_type:"Тип SIM",sim_plain:"Обычная SIM",esim:"eSIM",gov_q:"Какая услуга «Единого окна» нужна?",gov_other:"Другая услуга (напишу сам)",gov_write:"Напишите услугу",
  tr_from:"Откуда",tr_to:"Куда",tr_date:"Дата",how_get:"Как получить?",deliv:"Доставка",office:"Заберу в офисе",remote:"Онлайн (удалённо)",remote_sm:"Оператор позвонит и оформит всё онлайн",how_do:"Как оформим?",office_do:"В нашем офисе",tariff:"Тариф",tariff_pick:"Выберите тариф",per_m:"в месяц",per_d:"в день",per_1:"разово",see_shop:"Выбрать и заказать",offl_t:"Ждём вас в офисе!",offl_p:"Эта услуга оказывается на месте в нашем офисе и во всех филиалах — без очереди. Выберите ближайший адрес:",offl_call:"Есть вопросы — позвоните",
  free:"бесплатно",addr_f:"Ваш адрес",addr_ph:"Район, махалля, улица, дом",loc_btn:"Отправить мою геолокацию",loc_ok:"Геолокация получена ✓",loc_err:"Не удалось получить геолокацию. Напишите адрес.",
@@ -789,6 +805,7 @@ const DEFAULT={
  shopCats:[{id:"phones",name:{uz:"Telefonlar",ru:"Телефоны"},hidden:false},{id:"acc",name:{uz:"Aksessuarlar",ru:"Аксессуары"},hidden:false},{id:"routers",name:{uz:"Wi-Fi routerlar",ru:"Wi-Fi роутеры"},hidden:false}],
  nums:{enabled:true},
  newsCfg:{enabled:true,ai:false,autoPublish:false},
+ catalogCfg:{ai:false,autoPublish:true},
  reviewsCfg:{enabled:true},
  remind:{enabled:true,minutes:"30"},
  report:{enabled:true},
@@ -818,7 +835,7 @@ function normalize(x){
  o.branches=o.branches.map(b=>Object.assign({name:{uz:"",ru:""},addr:{uz:"",ru:""},mark:{uz:"",ru:""},phone:"",loc:"",own:false,days:"all",open:"08:00",close:"22:00",hidden:false},b));
  o.slides=o.slides.map(x=>Object.assign({vis:"sims",img:"",video:"",tab:{uz:"",ru:""},title:{uz:"",ru:""},text:{uz:"",ru:""}},x));
  o.services=o.services.map(x=>Object.assign({icon:"sim",kind:"other",title:{uz:"",ru:""},text:{uz:"",ru:""},online:true,delivery:false},x));
- ["delivery","contact","promo","ref","nasiya","shop","nums","newsCfg","reviewsCfg","remind","report","channel","afterHours"].forEach(k=>{o[k]=Object.assign(clone(DEFAULT[k]),typeof o[k]==="object"&&o[k]&&!Array.isArray(o[k])?o[k]:{})});
+ ["delivery","contact","promo","ref","nasiya","shop","nums","newsCfg","catalogCfg","reviewsCfg","remind","report","channel","afterHours"].forEach(k=>{o[k]=Object.assign(clone(DEFAULT[k]),typeof o[k]==="object"&&o[k]&&!Array.isArray(o[k])?o[k]:{})});
  ["gov","shopCats"].forEach(k=>{if(!Array.isArray(o[k]))o[k]=clone(DEFAULT[k])});
  o.operators=o.operators.map((x,i)=>Object.assign({id:"op"+i,name:"",color:"#1A2C6E",text:"#FFFFFF",edge:"#0C1640",logo:"",pre:"",hidden:false},x));
  o.offers=o.offers.map(x=>Object.assign({op:"",title:{uz:"",ru:""},text:{uz:"",ru:""},price:"",img:"",hidden:false},x));
@@ -890,7 +907,7 @@ const liveSocials=()=>S.socials.map(s=>({...s,href:socUrl(s.type,s.url)})).filte
 /* =================== Sahifa tuzilishi =================== */
 const SHELL=`<header><div class="wrap hdr">
   <a class="logo" href="#top" id="logoTop"></a>
-  <nav><a href="#services" data-i="n1"></a><a href="#shop" data-i="n6" data-nav="shop"></a><a href="#news" data-i="n7" data-nav="news"></a><a href="#company" data-i="n2"></a><a href="#branches" data-i="n3"></a><a href="#contacts" data-i="n4"></a></nav>
+  <nav><a href="#services" data-i="n1"></a><a href="#tariffs" data-i="n8" data-nav="tariffs"></a><a href="#shop" data-i="n6" data-nav="shop"></a><a href="#news" data-i="n7" data-nav="news"></a><a href="#company" data-i="n2"></a><a href="#branches" data-i="n3"></a><a href="#contacts" data-i="n4"></a></nav>
   <button class="cartb" id="cartB" type="button" hidden aria-label="Savatcha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><b id="cartN">0</b></button>
   <div class="lang" role="group" aria-label="Til"><button data-l="uz">UZ</button><button data-l="ru">RU</button></div>
   <a class="btn btn-gold" href="#contacts"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg><span data-i="cta"></span></a>
@@ -920,6 +937,11 @@ const SHELL=`<header><div class="wrap hdr">
   <section class="svc" id="services"><div class="wrap">
     <div class="svc-top"><div><h2 class="h2" data-i="svc_t"></h2><p class="lead" data-i="svc_p"></p></div></div>
     <div class="tiles" id="tiles"></div>
+  </div></section>
+
+  <section class="tfs" id="tariffs" hidden><div class="wrap">
+    <h2 class="h2" data-i="tf_t"></h2><p class="lead" data-i="tf_p"></p>
+    <div id="tfBox"></div>
   </div></section>
 
   <section class="co" id="company"><div class="wrap co-grid">
@@ -1281,6 +1303,28 @@ function renderOffers(){
   return `<article class="of"><div class="of-img" style="--c:${esc(op?op.color:"#1A2C6E")};--t:${esc(op?op.text:"#fff")}">${vis}</div><div class="of-b"><h3>${esc(L(o.title))}</h3><p>${esc(L(o.text))}</p>
    <div class="of-pr ${o.price?"":"ask"}">${o.price?esc(o.price):t("ask")}</div><button class="btn btn-lapis" type="button" data-order="offer|${i}">${t("order")}</button></div></article>`}).join("")}
 $("ofChips").addEventListener("click",e=>{const b=e.target.closest("[data-of]");if(!b)return;ofOp=b.dataset.of;renderOffers()});
+
+/* ---- Operatorlar tariflari (AI katalog) ---- */
+let CATD=null,TF={op:"",sec:"tariffs"};const TF_MAP={uzmobile:"uztelecom"};
+async function loadTf(){try{const r=await fetch("/api/catalog");CATD=(await r.json()).ops||{}}catch(e){CATD={}}renderTariffs()}
+function renderTariffs(){
+ const box=$("tfBox"),sec=$("tariffs");if(!box)return;
+ if(!CATD){box.innerHTML=`<p class="lead">${t("tf_load")}</p>`;if(!loadTf.on){loadTf.on=1;loadTf()}return}
+ const list=ops().map(o=>({o,id:TF_MAP[o.id]||o.id})).filter(x=>CATD[x.id]);
+ sec.hidden=!list.length;document.querySelectorAll('[data-nav="tariffs"]').forEach(a=>a.hidden=!list.length);if(!list.length)return;
+ if(!list.some(x=>x.id===TF.op))TF.op=list[0].id;
+ const d=CATD[TF.op],secs=[["tariffs","tf_tar"],["internet","tf_int"],["minutes","tf_min"],["archive","tf_arc"]].filter(([k])=>(d[k]||[]).length);
+ if(!secs.some(([k])=>k===TF.sec))TF.sec=(secs[0]||["tariffs"])[0];
+ const arch=TF.sec==="archive",fresh=x=>x.since&&Date.now()-Date.parse(x.since)<30*864e5;
+ const card=x=>`<div class="tf${arch?" arch":""}"><div class="tf-h"><b>${esc(x.n)}</b>${!arch&&fresh(x)?`<span class="tf-new">${t("tf_new")}</span>`:""}</div>${L(x.d)?`<p>${esc(L(x.d))}</p>`:""}
+  ${arch?`<span class="tf-a">${x.why==="price"?`${t("tf_price")} ${som(x.newP)} ${t("tf_sum")}`:t("tf_closed")} · ${t("tf_since")} ${esc(x.from||"")}</span>`:""}
+  <div class="tf-f"><span class="tf-p">${som(x.p)} <small>${t("tf_sum")}${(x.sec||TF.sec)==="tariffs"?" / "+t("tf_mo"):""}</small></span>${x.c&&!arch?`<a class="tf-c" href="tel:${esc(x.c.replace(/#/g,"%23"))}" title="${t("tf_code")}">${esc(x.c)}</a>`:""}</div></div>`;
+ box.innerHTML=`<div class="chips tf-ops" role="group">${list.map(x=>`<button type="button" data-tfop="${esc(x.id)}" aria-pressed="${x.id===TF.op}"><i style="background:${esc(x.o.color)}"></i>${esc(x.o.name)}</button>`).join("")}</div>
+  <div class="chips tf-secs" role="group">${secs.map(([k,l])=>`<button type="button" data-tfsec="${k}" aria-pressed="${k===TF.sec}">${t(l)} · ${(d[k]||[]).length}</button>`).join("")}</div>
+  <div class="tf-grid">${(arch?d.archive:d[TF.sec]||[]).map(card).join("")}</div>`;
+}
+document.addEventListener("click",e=>{const a=e.target.closest("[data-tfop],[data-tfsec]");if(!a)return;if(a.dataset.tfop)TF.op=a.dataset.tfop;if(a.dataset.tfsec)TF.sec=a.dataset.tfsec;renderTariffs()});
+
 function render(){
  document.documentElement.lang=lang;
  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
@@ -1294,7 +1338,7 @@ function render(){
  const tBtn=(s,i)=>`<button class="btn btn-lapis go" type="button" ${tAct(s,i)}>${s.cat&&tAct(s,i).startsWith("data-shopcat")?t("see_shop"):t("order")}${GO}</button>`;
  $("tiles").innerHTML=S.services.filter(s=>!s.hidden).map(s=>[s,S.services.indexOf(s)]).map(([s,i])=>`<div class="tile on" ${tAct(s,i)}><div class="badge">${ico(s.icon)}</div><div class="tb"><h3>${esc(L(s.title))}</h3><p>${esc(L(s.text))}</p>${s.online||s.cat?"":`<div class="offl"><span>🏢 ${t("offline")}</span></div>`}${tBtn(s,i)}</div></div>`).join("");
  $("fSvc").innerHTML=S.services.filter(s=>!s.hidden).map(s=>[s,S.services.indexOf(s)]).map(([s,i])=>`<li><button type="button" class="flink" ${tAct(s,i)}>${esc(L(s.title))}</button></li>`).join("");
- renderOffers();
+ renderOffers();renderTariffs();
  $("aTitle").textContent=L(S.about.title);$("aText").textContent=L(S.about.text);
  $("facts").innerHTML=[[ops().length,"f1"],[S.services.length,"f2"],[visBranches().length,"f3"]].map(([n,k])=>`<div class="fact"><b>${n}</b><span>${t(k)}</span></div>`).join("")+`<div class="fact"><b>${S.hours.open}–${S.hours.close}</b><span>${t("days")[S.hours.days]}</span></div>`;
  const f=S.founder,ini=f.name.trim().split(/\s+/).map(w=>w[0]||"").join("").slice(0,2).toUpperCase();
@@ -1870,7 +1914,7 @@ function download(txt,name,type){const a=document.createElement("a");a.href=URL.
 async function pingSys(){try{const r=await fetch("/api/ai",{cache:"no-store"});SYS=r.ok?await r.json():{err:r.status}}catch(e){SYS={err:"net"}}if(!cms.hidden&&D&&(page==="dash"||page==="ai"))redrawContent()}
 
 /* ---- Sahifalar ---- */
-const SI={general:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+const SI={tariffs:'<path d="M4 4h16v6H4z"/><path d="M4 14h10v6H4z"/><path d="M18 14v6"/><path d="M15 17h6"/>',general:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
  contacts:'<path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/>',
  slides:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/>',services:'<path d="M4 6h16M4 12h16M4 18h10"/>',
  about:'<path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-6h6v6"/>',founder:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
@@ -1883,7 +1927,7 @@ const SI={general:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4
  aictl:'<path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M4 20h16"/>',shop:'<path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/>',numbers:'<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',news:'<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5"/>',promos:'<path d="M3 12V4h8l10 10-8 8z"/><path d="M9 15l6-6"/>',reviews:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',orders:'<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>',
  site:'<path d="M15 3h6v6M10 14L21 3M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6"/>',out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'};
 const si=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SI[k]}</svg>`;
-const PAGES=[["dash","Bosh panel"],["requests","Arizalar"],["aictl","AI boshqaruv"],["shop","Do‘kon"],["numbers","Chiroyli raqamlar"],["news","Yangiliklar"],["promos","Promokod va referal"],["reviews","Sharhlar"],["orders","Buyurtma sozlamalari"],["general","Kompaniya va ish vaqti"],["contacts","Telefonlar va tarmoqlar"],["branches","Filiallar"],["slides","Bosh sahifa slayderi"],["operators","Operatorlar va logolar"],["offers","SIM takliflari"],["services","Xizmatlar"],["about","Kompaniya haqida"],["founder","Asoschi"],["ai","UrgutTelecom AI"]];
+const PAGES=[["dash","Bosh panel"],["requests","Arizalar"],["aictl","AI boshqaruv"],["shop","Do‘kon"],["numbers","Chiroyli raqamlar"],["news","Yangiliklar"],["tariffs","Tariflar (AI)"],["promos","Promokod va referal"],["reviews","Sharhlar"],["orders","Buyurtma sozlamalari"],["general","Kompaniya va ish vaqti"],["contacts","Telefonlar va tarmoqlar"],["branches","Filiallar"],["slides","Bosh sahifa slayderi"],["operators","Operatorlar va logolar"],["offers","SIM takliflari"],["services","Xizmatlar"],["about","Kompaniya haqida"],["founder","Asoschi"],["ai","UrgutTelecom AI"]];
 const TR_PAGES=["general","branches","slides","services","about","founder","offers","ai","shop","orders"],NO_SAVE=["dash","requests","aictl","numbers","reviews"];
 function setStat(txt,cls){const s=$("st");if(s){s.className="stat "+(cls||"");s.textContent=txt}}
 function drawCms(){
@@ -2087,6 +2131,7 @@ const BLANK={
  offers:()=>({op:(D.operators[0]||{}).id||"",title:{uz:"Yangi taklif",ru:"Новое предложение"},text:{uz:"",ru:""},price:"",img:"",hidden:false})};
 
 /* =================== Admin v9: do‘kon, raqamlar, yangiliklar, promokod, sharhlar, AI boshqaruv =================== */
+let CAT=null,CATBUSY="",CATMSG="",CATOP="ucell";
 const COL={};let ED=null,EDERR="",AIH=[],AIBUSY=false,MTEST=null,OPSMSG="",NBULK="";
 const tsMs=x=>x&&x.toDate?x.toDate().getTime():Date.parse(x||"")||0;
 const numv=v=>{const n=Number(String(v??"").replace(/[^\d.]/g,""));return Number.isFinite(n)?n:0};
@@ -2174,6 +2219,35 @@ async function saveED(){
   ED=null;await loadCol(col,true);redrawContent();setStat("Saqlandi. Saytda darhol ko‘rinadi.","ok")}
  catch(er){fail("Saqlab bo‘lmadi: "+(er.code||er.message))}}
 async function upImg(f,max){return CL_ON?upload(f,"image",k=>setStat(`Yuklanmoqda… ${Math.round(k*100)}%`)):compress(f,max||1200)}
+
+
+/* ---- Tariflar (AI katalog) ---- */
+const CAT_OPS=[["ucell","Ucell"],["uztelecom","Uztelecom"],["mobiuz","Mobiuz"],["beeline","Beeline"]];
+const CAT_SEC={tariffs:"Tariflar",internet:"Internet paketlar",minutes:"Daqiqa va SMS"};
+async function loadCat(){try{const r=await fetch("/api/catalog?all=1",{cache:"no-store"});CAT=await r.json()}catch(e){CAT={error:e.message}}redrawContent()}
+const ago=iso=>{if(!iso)return"hali tekshirilmagan";const m=Math.round((Date.now()-Date.parse(iso))/60000);return m<60?`${m} daqiqa oldin`:m<1440?`${Math.round(m/60)} soat oldin`:`${Math.round(m/1440)} kun oldin`};
+EDIT.tariffs=()=>{
+ if(!CAT){loadCat();return `<p class="note">Yuklanmoqda…</p>`}
+ if(CAT.error)return `<p class="note">Yuklab bo‘lmadi: ${esc(CAT.error)}</p>`;
+ const d=(CAT.ops||{})[CATOP]||{};
+ const row=(x,sec,i,arch)=>`<div class="arow" style="grid-template-columns:minmax(0,1fr) auto"><div><b>${esc(x.n)}</b>${x.since&&!arch?` <span class="pill new">Yangi · ${esc(x.since)}</span>`:""}<small>${esc((x.d&&x.d.uz)||"")}${x.p?` · ${som(x.p)} so‘m`:""}${x.c?` · <code>${esc(x.c)}</code>`:""}${arch?` · ${esc(CAT_SEC[x.sec]||"")} · ${x.why==="price"?`narx ${som(x.newP||0)} ga o‘zgardi`:"sotuvdan chiqdi"} (${esc(x.from||"")})`:""}</small></div>
+  <div class="acts">${arch?`<button class="lnk" type="button" data-catrest="${i}">Qaytarish</button>`:`<button class="lnk" type="button" data-catarch="${sec}|${i}">Arxivga</button>`}</div></div>`;
+ const pend=Object.entries(d.pending||{});
+ return P("Sozlamalar",CHK("AI tariflarni o‘zi kuzatib borsin","catalogCfg.ai","Har 2 soatda navbat bilan bitta operatorning bitta bo‘limi rasmiy saytdan tekshiriladi — har bir bo‘lim kuniga 1 marta. Yangi tarif qo‘shiladi, narxi o‘zgargan yoki yopilgan tarif ARXIVga o‘tadi (hech narsa o‘chirilmaydi). Internetdan qidirish uchun Gemini to‘lovi (kredit) ulangan bo‘lishi kerak")
+   +CHK("O‘zgarishlar tasdiqsiz darhol chiqsin","catalogCfg.autoPublish","O‘chiq bo‘lsa, AI topgan o‘zgarish shu yerda “Tasdiqlash”ni kutadi")
+   +`<p class="note">Belgilarni o‘zgartirgach, yuqoridagi “Saqlash”ni bosing. Har bir o‘zgarish adminlarga Telegram’da manbasi bilan yuboriladi.</p>`)
+ +`<div class="tools" style="margin:6px 0 10px;flex-wrap:wrap">${CAT_OPS.map(([id,n])=>`<button class="btn btn-sm ${id===CATOP?"btn-gold":"btn-soft"}" type="button" data-catop="${id}">${n}</button>`).join("")}</div>`
+ +P("Holat",`${Object.keys(CAT_SEC).map(k=>`<div class="arow" style="grid-template-columns:minmax(0,1fr) auto"><div><b>${CAT_SEC[k]}</b><small>${(d[k]||[]).length} ta · tekshirildi: ${ago((d.checked||{})[k])}</small></div><div class="acts"><button class="btn btn-soft btn-sm" type="button" data-catrun="${k}" ${CATBUSY?"disabled":""}>Hozir tekshirish</button></div></div>`).join("")}
+   <div class="tools"><button class="btn btn-gold btn-sm" type="button" data-catrun="all" ${CATBUSY?"disabled":""}>${CATBUSY?esc(CATBUSY):"Hammasini tekshirish (1–2 daqiqa)"}</button><span class="note">${esc(CATMSG)}</span></div>`)
+ +(pend.length?P("Tasdiq kutmoqda",pend.map(([sec,p])=>`<div class="panel" style="margin:0 0 10px"><div class="panel-b"><b>${CAT_SEC[sec]}</b><pre style="white-space:pre-wrap;font:500 14px var(--font);margin:6px 0">${esc(p.text||"")}</pre>${p.src?`<small>Manba: ${esc(p.src)}</small>`:""}
+   <div class="tools"><button class="btn btn-gold btn-sm" type="button" data-catok="${sec}|ha">Tasdiqlash</button><button class="btn btn-soft btn-sm" type="button" data-catok="${sec}|yo‘q">Rad etish</button></div></div></div>`).join("")):"")
+ +Object.keys(CAT_SEC).map(k=>P(`${CAT_SEC[k]} (${(d[k]||[]).length})`,`<div class="adm-list">${(d[k]||[]).map((x,i)=>row(x,k,i,false)).join("")||`<p class="note">Bo‘sh.</p>`}</div>`)).join("")
+ +P(`Arxiv (${(d.archive||[]).length})`,`<p class="note">Eski tariflar mijozlar uchun ilovada “Arxiv” bo‘limida ko‘rinadi.</p><div class="adm-list">${(d.archive||[]).slice(0,60).map((x,i)=>row(x,x.sec,i,true)).join("")||`<p class="note">Arxiv hozircha bo‘sh.</p>`}</div>`)
+ +((d.log||[]).length?P("AI o‘zgarishlar jurnali",(d.log||[]).slice(0,15).map(l=>`<div class="arow" style="grid-template-columns:minmax(0,1fr)"><div><b>${CAT_SEC[l.sec]||""} · ${esc(new Date(l.at).toLocaleString("ru-RU",{timeZone:"Asia/Tashkent"}))}${l.auto?"":" · tasdiq bilan"}</b><small style="white-space:pre-wrap">${esc(l.text||"")}</small></div></div>`).join("")):"");
+};
+async function catAct(actions,busy){CATBUSY=busy;CATMSG="";redrawContent();
+ const out=[];for(const a of actions){try{const j=await adminAI({mode:"exec",actions:[a]});out.push(...(j.results||[]).map(r=>(r.ok?"":"⚠️ ")+r.msg))}catch(er){out.push("⚠️ "+er.message)}}
+ CATBUSY="";CATMSG=out.join(" · ");await loadCat()}
 
 /* ---- sahifalar ---- */
 const pillOf=(st,map)=>`<span class="pill ${st==="published"||st==="approved"||st==="free"?"done":st==="draft"||st==="pending"||st==="reserved"?"new":"cancel"}">${map[st]||st}</span>`;
@@ -2281,6 +2355,12 @@ const ADMX={
   if((b=g("[data-aino]"))){aiConfirm(+b.dataset.aino,false);return true}
   if(g("[data-mtest]")){MTEST={busy:true};redrawContent();
    try{MTEST=await adminAI({mode:"test",model:D.ai.model})}catch(er){MTEST={ok:false,error:er.message}}redrawContent();return true}
+  if((b=g("[data-catop]"))){CATOP=b.dataset.catop;CATMSG="";redrawContent();return true}
+  if((b=g("[data-catrun]"))){const k=b.dataset.catrun,secs=k==="all"?["tariffs","internet","minutes"]:[k];
+   catAct(secs.map(sec=>({name:"catalog_check",args:{operator:CATOP,section:sec}})),"AI tekshirmoqda… (har bo‘lim 20–40 soniya)");return true}
+  if((b=g("[data-catok]"))){const[sec,ap]=b.dataset.catok.split("|");catAct([{name:"catalog_decide",args:{operator:CATOP,section:sec,approve:ap}}],"Saqlanmoqda…");return true}
+  if((b=g("[data-catrest]"))){catAct([{name:"catalog_restore",args:{operator:CATOP,index:+b.dataset.catrest}}],"Saqlanmoqda…");return true}
+  if((b=g("[data-catarch]"))){const[sec,i]=b.dataset.catarch.split("|");if(!confirm("Arxivga o‘tkazilsinmi?"))return true;catAct([{name:"catalog_archive",args:{operator:CATOP,section:sec,index:+i}}],"Saqlanmoqda…");return true}
   if(g("[data-newsrun]")){OPSMSG="AI qidirmoqda… (20–40 soniya)";redrawContent();
    try{const j=await adminAI({mode:"exec",actions:[{name:"fetch_news_now",args:{}}]});OPSMSG=(j.results||[]).map(r=>r.msg).join("; ");delete COL.news}catch(er){OPSMSG="Xato: "+er.message}redrawContent();return true}
   if(g("[data-sendrep]")){OPSMSG="Yuborilmoqda…";redrawContent();
