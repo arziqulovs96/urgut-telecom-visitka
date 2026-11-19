@@ -163,7 +163,9 @@ async function handle(req, context) {
   const buttons = [[btn("✅ Qabul qildim", "work"), ...(r.fulfil === "delivery" ? [btn("🚚 Yo‘lda", "onway")] : [])], [btn("✔️ Bajarildi", "done"), btn("❌ Bekor", "cancel")]];
   if (r.tgId) buttons.push([{ text: "✉️ Mijozga xabar yozish", callback_data: `rm:${id}` }]);
   if (r.tgUser) lines.push(`💬 Telegram: @${r.tgUser}`);
-  await tgSend(lines.join("\n"), { chats: await adminChats("requests"), buttons }).catch(() => {});
+  const sent = await tgSend(lines.join("\n"), { chats: await adminChats("requests"), buttons }).catch(() => false);
+  // Yetib bormasa — sotuv boti buyurtmani bazadan o‘zi topib adminlarga yuboradi
+  if (sent) await patchDoc(`requests/${id}`, { tgSent: true }).catch(() => {});
 
   return json({ ok: true, code: r.code, total: r.total, afterHours: r.afterHours });
 };
