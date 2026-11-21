@@ -3,6 +3,11 @@
   functions = "netlify/functions"
   edge_functions = "netlify/edge-functions"
 
+# Firebase web kaliti (AIza…) maxfiy emas: brauzer uchun ochiq beriladi, ruxsatlarni Firestore qoidalari boshqaradi.
+# Netlify'ning "smart" tekshiruvi uni maxfiy deb o'ylab deployni to'xtatmasligi uchun shu qiymat istisno qilinadi.
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAgUjLu3DIKEc4rpFcXcQh1CKXmQlEiqDk"
+
 [functions]
   node_bundler = "esbuild"
 
