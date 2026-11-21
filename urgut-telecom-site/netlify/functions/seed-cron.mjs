@@ -3,7 +3,7 @@
 import { ready, siteContent, saveSiteContent } from "../lib/fs.mjs";
 import { BRANCHES } from "../lib/branches.mjs";
 
-const MARK = "branches_2026_11_19b"; // yangilangan ro‘yxat (Uztelecom va Beeline ofislari)
+const MARK = "branches_2026_11_21"; // to‘liq ro‘yxat: 7 ta manzil
 
 export default async () => {
   if (!ready()) return;

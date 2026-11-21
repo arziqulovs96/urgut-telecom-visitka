@@ -1,13 +1,13 @@
-// Urgut Telecom filiallari (2026-11-19, Sardor bergan koordinatalar). Ish vaqti — umumiy (har kuni 08:00–22:00).
+// Urgut Telecom filiallari (2026-11-21, Sardor bergan to‘liq ro‘yxat). Ish vaqti — umumiy (har kuni 08:00–22:00).
 export const BRANCHES = [
  {
   "name": {
-   "uz": "Urgut Telecom Uztelecom ofisi",
-   "ru": "Urgut Telecom — офис Uztelecom"
+   "uz": "Urgut Ucell markaziy ofisi",
+   "ru": "Центральный офис Ucell, Ургут"
   },
   "addr": {
-   "uz": "Urgut tumani",
-   "ru": "Ургутский район"
+   "uz": "Urgut shahri",
+   "ru": "г. Ургут"
   },
   "mark": {
    "uz": "",
@@ -23,19 +23,19 @@ export const BRANCHES = [
  },
  {
   "name": {
-   "uz": "Urgut Telecom Beeline ofisi",
-   "ru": "Urgut Telecom — офис Beeline"
+   "uz": "Urgut Uztelecom markaziy ofisi",
+   "ru": "Центральный офис Uztelecom, Ургут"
   },
   "addr": {
-   "uz": "Urgut tumani",
-   "ru": "Ургутский район"
+   "uz": "Urgut shahri",
+   "ru": "г. Ургут"
   },
   "mark": {
    "uz": "",
    "ru": ""
   },
   "phone": "+998 93 722 00 45",
-  "loc": "39.427901, 67.242412",
+  "loc": "39.427907, 67.242711",
   "own": false,
   "days": "all",
   "open": "08:00",
@@ -44,12 +44,54 @@ export const BRANCHES = [
  },
  {
   "name": {
-   "uz": "Urgut Telecom — Urgut savdo kompleksi filiali",
-   "ru": "Urgut Telecom — филиал в торговом комплексе Ургута"
+   "uz": "MBR — Samon bozor",
+   "ru": "MBR — рынок Самон"
   },
   "addr": {
-   "uz": "Urgut savdo kompleksi",
-   "ru": "Торговый комплекс Ургута"
+   "uz": "Samon bozor",
+   "ru": "Рынок Самон"
+  },
+  "mark": {
+   "uz": "",
+   "ru": ""
+  },
+  "phone": "+998 93 722 00 45",
+  "loc": "39.428248, 67.242494",
+  "own": false,
+  "days": "all",
+  "open": "08:00",
+  "close": "22:00",
+  "hidden": false
+ },
+ {
+  "name": {
+   "uz": "MBR — Samon bozor (2)",
+   "ru": "MBR — рынок Самон (2)"
+  },
+  "addr": {
+   "uz": "Samon bozor",
+   "ru": "Рынок Самон"
+  },
+  "mark": {
+   "uz": "",
+   "ru": ""
+  },
+  "phone": "+998 93 722 00 45",
+  "loc": "39.428971, 67.242854",
+  "own": false,
+  "days": "all",
+  "open": "08:00",
+  "close": "22:00",
+  "hidden": false
+ },
+ {
+  "name": {
+   "uz": "Urgut Savdo kompleksi, 5/94-do‘kon",
+   "ru": "Торговый комплекс Ургут, магазин 5/94"
+  },
+  "addr": {
+   "uz": "Urgut Savdo kompleksi, 5/94-do‘kon",
+   "ru": "Торговый комплекс Ургут, магазин 5/94"
   },
   "mark": {
    "uz": "",
@@ -65,19 +107,19 @@ export const BRANCHES = [
  },
  {
   "name": {
-   "uz": "Urgut Telecom — Ispanza, «Paxmob» filiali",
-   "ru": "Urgut Telecom — филиал «Paxmob», Испанза"
+   "uz": "Urgut istirohat bog‘i, 24/7 ko‘cha",
+   "ru": "Ургут, парк отдыха, улица 24/7"
   },
   "addr": {
-   "uz": "Ispanza, Urgut tumani",
-   "ru": "Испанза, Ургутский район"
+   "uz": "Istirohat bog‘i, 24/7 ko‘cha",
+   "ru": "Парк отдыха, улица 24/7"
   },
   "mark": {
    "uz": "",
    "ru": ""
   },
   "phone": "+998 93 722 00 45",
-  "loc": "39.408083, 67.275347",
+  "loc": "39.427780, 67.235818",
   "own": false,
   "days": "all",
   "open": "08:00",
@@ -86,19 +128,19 @@ export const BRANCHES = [
  },
  {
   "name": {
-   "uz": "Urgut Telecom — «Hasan telefon» filiali",
-   "ru": "Urgut Telecom — филиал «Hasan telefon»"
+   "uz": "MBR — Tosh ariq mahallasi",
+   "ru": "MBR — махалля Тош арик"
   },
   "addr": {
-   "uz": "Urgut tumani",
-   "ru": "Ургутский район"
+   "uz": "Tosh ariq mahallasi, Urgut tumani",
+   "ru": "Махалля Тош арик, Ургутский район"
   },
   "mark": {
    "uz": "",
    "ru": ""
   },
   "phone": "+998 93 722 00 45",
-  "loc": "39.428248, 67.242494",
+  "loc": "39.408083, 67.275347",
   "own": false,
   "days": "all",
   "open": "08:00",
